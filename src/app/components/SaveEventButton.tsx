@@ -1,6 +1,7 @@
 import { type PointerEvent, useMemo } from "react";
 import { Heart } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
+import { isAuthUserEmailVerified } from "../auth/auth-api";
 import { useCurrentUser } from "../auth/auth-queries";
 import {
   useMemberDashboard,
@@ -30,8 +31,9 @@ export function SaveEventButton({
   const location = useLocation();
   const { data: user, isLoading: isUserLoading } = useCurrentUser();
   const isMember = Boolean(user?.roles?.includes("user"));
+  const isVerifiedMember = Boolean(isMember && isAuthUserEmailVerified(user));
   const isAdminOnly = Boolean(user?.roles?.includes("admin") && !isMember);
-  const dashboardQuery = useMemberDashboard({ enabled: isMember });
+  const dashboardQuery = useMemberDashboard({ enabled: isVerifiedMember });
   const saveMutation = useSaveEventMutation();
   const removeMutation = useRemoveSavedEventMutation();
   const savedEventIds = useMemo(
@@ -41,7 +43,7 @@ export function SaveEventButton({
   const isSaved = savedEventIds.has(eventId);
   const isBusy =
     isUserLoading ||
-    (isMember && dashboardQuery.isLoading) ||
+    (isVerifiedMember && dashboardQuery.isLoading) ||
     saveMutation.isPending ||
     removeMutation.isPending;
   const label = isAdminOnly
@@ -49,7 +51,9 @@ export function SaveEventButton({
     : isSaved
       ? savedLabel
       : user
-        ? idleLabel
+        ? isVerifiedMember
+          ? idleLabel
+          : "Verify Email"
         : loginLabel;
 
   const handlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
@@ -63,6 +67,15 @@ export function SaveEventButton({
 
     if (!user) {
       navigate("/login", {
+        state: {
+          from: `${location.pathname}${location.search}${location.hash}`,
+        },
+      });
+      return;
+    }
+
+    if (isMember && !isVerifiedMember) {
+      navigate("/email-verification", {
         state: {
           from: `${location.pathname}${location.search}${location.hash}`,
         },

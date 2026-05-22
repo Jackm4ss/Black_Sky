@@ -116,6 +116,7 @@ return [
 
     'limiters' => [
         'login' => 'login',
+        'verification' => 'verification',
         'two-factor' => 'two-factor',
         'passkeys' => 'passkeys',
     ],

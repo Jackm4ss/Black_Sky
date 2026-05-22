@@ -298,6 +298,7 @@ class UserDashboardController extends Controller
         $user = $request->user()->loadMissing('roles');
 
         abort_unless($user->hasRole('user'), 403, 'Only member accounts can access this dashboard.');
+        abort_unless($user->hasVerifiedEmail(), 403, 'Verify your email before accessing the member dashboard.');
 
         return $user;
     }

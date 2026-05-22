@@ -1,6 +1,7 @@
 import { useState, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, LayoutDashboard, LogIn, LogOut, Menu, UserRound, X } from "lucide-react";
+import { isAuthUserEmailVerified } from "../auth/auth-api";
 import { useCurrentUser, useLogoutMutation } from "../auth/auth-queries";
 import {
   DropdownMenu,
@@ -24,8 +25,10 @@ export function Navbar() {
   const { data: user } = useCurrentUser();
   const logoutMutation = useLogoutMutation();
   const isAdmin = user?.roles?.includes("admin") && !user.roles.includes("user");
+  const isVerifiedMember = Boolean(user?.roles?.includes("user") && isAuthUserEmailVerified(user));
   const accountDisplayName = user?.name?.trim() || user?.email || "Account";
-  const accountHref = user ? (isAdmin ? "/admin" : "/dashboard") : "/login";
+  const accountHref = user ? (isAdmin ? "/admin" : isVerifiedMember ? "/dashboard" : "/email-verification") : "/login";
+  const accountMenuLabel = isAdmin || isVerifiedMember ? "Dashboard" : "Verify Email";
   const accountLabel = user ? accountDisplayName : "LOGIN";
   const showTicketCta = !user;
 
@@ -176,7 +179,7 @@ export function Navbar() {
                   <DropdownMenuItem asChild className="rounded-none px-3 py-2.5 !text-[12px] font-semibold normal-case tracking-normal focus:bg-sky-500/15 focus:text-white">
                     <a href={accountHref} onClick={() => setMobileOpen(false)}>
                       <LayoutDashboard size={14} aria-hidden="true" />
-                      Dashboard
+                      {accountMenuLabel}
                     </a>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />

@@ -151,7 +151,7 @@ export default function App() {
           <Route
             path="/dashboard"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }
@@ -159,7 +159,7 @@ export default function App() {
           <Route
             path="/dashboard/account"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }
@@ -167,7 +167,7 @@ export default function App() {
           <Route
             path="/dashboard/saved-events"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }
@@ -175,7 +175,7 @@ export default function App() {
           <Route
             path="/dashboard/notifications"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }
@@ -183,7 +183,7 @@ export default function App() {
           <Route
             path="/dashboard/support"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }
@@ -191,7 +191,7 @@ export default function App() {
           <Route
             path="/dashboard/security"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }
@@ -199,7 +199,7 @@ export default function App() {
           <Route
             path="/dashboard/password"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }
@@ -207,7 +207,7 @@ export default function App() {
           <Route
             path="/dashboard/remove-account"
             element={
-              <RequireAuth allowedRoles={["user"]}>
+              <RequireAuth allowedRoles={["user"]} requireVerified>
                 <UserDashboardPage />
               </RequireAuth>
             }

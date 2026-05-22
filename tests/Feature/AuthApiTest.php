@@ -6,8 +6,10 @@ use App\Models\Event;
 use App\Models\User;
 use Database\Seeders\EventSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -34,9 +36,91 @@ class AuthApiTest extends TestCase
         $user = User::query()->where('email', 'member@blacksky.test')->firstOrFail();
 
         $this->assertTrue($user->hasRole('user'));
+        $this->assertNull($user->email_verified_at);
         $this->assertSame('MY', $user->registration_country_code);
         $this->assertSame('tiktok', $user->registration_source);
         $this->assertSame('https://www.tiktok.com/@blacksky', $user->registration_referrer);
+
+        Notification::assertSentTo($user, VerifyEmail::class);
+
+        $this->getJson('/api/v1/me/dashboard')->assertForbidden();
+    }
+
+    public function test_verify_email_notification_uses_black_sky_email_template(): void
+    {
+        Role::findOrCreate('user');
+
+        $user = User::factory()->unverified()->create([
+            'name' => 'Mailer Member',
+            'email' => 'mailer-member@blacksky.test',
+        ]);
+        $user->assignRole('user');
+
+        $mail = (new VerifyEmail)->toMail($user);
+        $html = (string) $mail->render();
+
+        $this->assertSame('Verify your Black Sky account', $mail->subject);
+        $this->assertStringContainsString('images/black-sky-logo.png', $html);
+        $this->assertStringContainsString('alt="Black Sky"', $html);
+        $this->assertStringContainsString('Welcome to Black Sky', $html);
+        $this->assertStringContainsString('api/verify-email/' . $user->id, $html);
+        $this->assertStringContainsString('Verify Email Address', $html);
+    }
+
+    public function test_verification_email_resend_is_rate_limited(): void
+    {
+        Notification::fake();
+        Role::findOrCreate('user');
+
+        $user = User::factory()->unverified()->create([
+            'email' => 'resend-cooldown@blacksky.test',
+        ]);
+        $user->assignRole('user');
+
+        $this->actingAs($user)
+            ->postJson('/api/email/verification-notification')
+            ->assertAccepted();
+
+        $response = $this->actingAs($user)
+            ->postJson('/api/email/verification-notification')
+            ->assertTooManyRequests()
+            ->assertJsonPath(
+                'message',
+                'Please wait before requesting another verification email.',
+            );
+
+        $retryAfter = (int) $response->headers->get('Retry-After');
+
+        $this->assertGreaterThan(0, $retryAfter);
+        $this->assertLessThanOrEqual(35, $retryAfter);
+        Notification::assertSentToTimes($user, VerifyEmail::class, 1);
+    }
+
+    public function test_verification_link_marks_user_email_verified_without_login(): void
+    {
+        Role::findOrCreate('user');
+
+        $user = User::factory()->unverified()->create([
+            'email' => 'verify-link@blacksky.test',
+        ]);
+        $user->assignRole('user');
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'api.verify-email',
+            now()->addMinutes(60),
+            [
+                'id' => $user->id,
+                'hash' => sha1($user->email),
+            ],
+        );
+
+        $this->assertGuest();
+
+        $this->get($verificationUrl)
+            ->assertRedirect('/dashboard');
+
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->assertGuest();
     }
 
     public function test_user_can_login_and_fetch_current_user(): void
@@ -60,6 +144,28 @@ class AuthApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.email', 'member@blacksky.test')
             ->assertJsonPath('data.roles.0', 'user');
+    }
+
+    public function test_unverified_user_cannot_login_through_member_login_api(): void
+    {
+        Role::findOrCreate('user');
+
+        $user = User::factory()->unverified()->create([
+            'email' => 'unverified-login@blacksky.test',
+            'password' => Hash::make('Password123!'),
+            'is_active' => true,
+        ]);
+        $user->assignRole('user');
+
+        $this->postJson('/api/login', [
+            'email' => 'unverified-login@blacksky.test',
+            'password' => 'Password123!',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email')
+            ->assertJsonPath('errors.email.0', 'Please verify your email before signing in.');
+
+        $this->assertGuest();
     }
 
     public function test_admin_cannot_login_through_member_login_api(): void

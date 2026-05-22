@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthenticatedUserController;
+use App\Http\Controllers\Api\Auth\VerifyEmailController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\V1\LogoutController;
 use App\Http\Controllers\Api\V1\PublicBlogPostController;
@@ -8,7 +9,6 @@ use App\Http\Controllers\Api\V1\PublicEventController;
 use App\Http\Controllers\Api\V1\PublicPortfolioController;
 use App\Http\Controllers\Api\V1\UserDashboardController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Http\Controllers\VerifyEmailController;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 Route::get('/health', HealthController::class)->name('api.health');
@@ -21,7 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', [AuthenticatedUserController::cl
     ->name('api.user.show');
 
 Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
-    ->middleware(['auth:sanctum', 'signed', 'throttle:6,1'])
+    ->middleware(['signed', 'throttle:6,1'])
     ->name('api.verify-email');
 
 Route::prefix('v1')->group(function () {
@@ -62,27 +62,29 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/logout', LogoutController::class)
         ->name('api.v1.logout');
 
-    Route::get('/me/dashboard', [UserDashboardController::class, 'show'])
-        ->middleware('throttle:120,1')
-        ->name('api.v1.me.dashboard');
+    Route::middleware('verified')->group(function () {
+        Route::get('/me/dashboard', [UserDashboardController::class, 'show'])
+            ->middleware('throttle:120,1')
+            ->name('api.v1.me.dashboard');
 
-    Route::match(['patch', 'post'], '/me/account', [UserDashboardController::class, 'updateAccount'])
-        ->middleware('throttle:60,1')
-        ->name('api.v1.me.account.update');
+        Route::match(['patch', 'post'], '/me/account', [UserDashboardController::class, 'updateAccount'])
+            ->middleware('throttle:60,1')
+            ->name('api.v1.me.account.update');
 
-    Route::delete('/me/account', [UserDashboardController::class, 'destroyAccount'])
-        ->middleware('throttle:10,1')
-        ->name('api.v1.me.account.destroy');
+        Route::delete('/me/account', [UserDashboardController::class, 'destroyAccount'])
+            ->middleware('throttle:10,1')
+            ->name('api.v1.me.account.destroy');
 
-    Route::patch('/me/password', [UserDashboardController::class, 'updatePassword'])
-        ->middleware('throttle:30,1')
-        ->name('api.v1.me.password.update');
+        Route::patch('/me/password', [UserDashboardController::class, 'updatePassword'])
+            ->middleware('throttle:30,1')
+            ->name('api.v1.me.password.update');
 
-    Route::post('/me/bookmarks/{event}', [UserDashboardController::class, 'storeBookmark'])
-        ->middleware('throttle:60,1')
-        ->name('api.v1.me.bookmarks.store');
+        Route::post('/me/bookmarks/{event}', [UserDashboardController::class, 'storeBookmark'])
+            ->middleware('throttle:60,1')
+            ->name('api.v1.me.bookmarks.store');
 
-    Route::delete('/me/bookmarks/{event}', [UserDashboardController::class, 'destroyBookmark'])
-        ->middleware('throttle:60,1')
-        ->name('api.v1.me.bookmarks.destroy');
+        Route::delete('/me/bookmarks/{event}', [UserDashboardController::class, 'destroyBookmark'])
+            ->middleware('throttle:60,1')
+            ->name('api.v1.me.bookmarks.destroy');
+    });
 });

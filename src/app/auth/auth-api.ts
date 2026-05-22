@@ -84,6 +84,9 @@ export const toAuthUser = (payload: LaravelUserPayload): AuthUser => {
   };
 };
 
+export const isAuthUserEmailVerified = (user?: Pick<AuthUser, "emailVerifiedAt"> | null) =>
+  Boolean(user?.emailVerifiedAt);
+
 const getMockUser = (): AuthUser | null => {
   const session = getCurrentSession();
 
@@ -241,20 +244,14 @@ export const authApi = {
       return { message: "Verification email sent." };
     }
 
-    try {
-      await ensureCsrfCookie();
-      const response = await http.post<AuthStatusResponse>(
-        "/api/email/verification-notification",
-      );
+    await ensureCsrfCookie();
+    const response = await http.post<AuthStatusResponse>(
+      "/api/email/verification-notification",
+    );
 
-      return {
-        message: response.data.message ?? "Verification email sent.",
-      };
-    } catch (error) {
-      throw new Error(
-        getRequestErrorMessage(error, "Gagal mengirim email verifikasi."),
-      );
-    }
+    return {
+      message: response.data.message ?? "Verification email sent.",
+    };
   },
 
   async logout(): Promise<void> {

@@ -6,7 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Checkbox } from "../components/ui/checkbox";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { getAuthErrorMessage } from "../auth/auth-api";
+import { getAuthErrorMessage, isAuthUserEmailVerified } from "../auth/auth-api";
 import { useLoginMutation, useLogoutMutation } from "../auth/auth-queries";
 import { loginSchema, type LoginFormValues } from "../auth/auth-schemas";
 import logo from "../../assets/LOGO.png";
@@ -88,6 +88,15 @@ export function LoginPage({ variant = "user" }: LoginPageProps) {
       if (!isAdminLogin && user.roles?.includes("admin")) {
         await logoutMutation.mutateAsync();
         setSubmitError("These credentials do not match our records.");
+        return;
+      }
+
+      if (!isAdminLogin && !isAuthUserEmailVerified(user)) {
+        navigate("/email-verification", {
+          state: {
+            from: memberRedirect,
+          },
+        });
         return;
       }
 

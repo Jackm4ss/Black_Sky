@@ -109,6 +109,26 @@ class UserDashboardTest extends TestCase
         $this->assertSame('activity', $notifications->firstWhere('title', 'Profile updated')['source']);
     }
 
+    public function test_unverified_user_cannot_access_member_dashboard_api(): void
+    {
+        Role::findOrCreate('user');
+
+        $user = User::factory()->unverified()->create([
+            'email' => 'unverified@blacksky.test',
+        ]);
+        $user->assignRole('user');
+        $event = $this->publishedEvent();
+
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/me/dashboard')->assertForbidden();
+        $this->patchJson('/api/v1/me/account', [
+            'name' => 'Unverified Member',
+            'email' => 'unverified@blacksky.test',
+        ])->assertForbidden();
+        $this->postJson('/api/v1/me/bookmarks/' . $event->id)->assertForbidden();
+    }
+
     public function test_user_can_update_account_details(): void
     {
         Role::findOrCreate('user');

@@ -2,1246 +2,1996 @@
   {
     "alpha2": "AF",
     "alpha3": "AFG",
-    "name": "Afghanistan"
+    "name": "Afghanistan",
+    "countryCallingCodes": [
+      "+93"
+    ]
   },
   {
     "alpha2": "AX",
     "alpha3": "ALA",
-    "name": "Åland Islands"
+    "name": "Åland Islands",
+    "countryCallingCodes": [
+      "+358"
+    ]
   },
   {
     "alpha2": "AL",
     "alpha3": "ALB",
-    "name": "Albania"
+    "name": "Albania",
+    "countryCallingCodes": [
+      "+355"
+    ]
   },
   {
     "alpha2": "DZ",
     "alpha3": "DZA",
-    "name": "Algeria"
+    "name": "Algeria",
+    "countryCallingCodes": [
+      "+213"
+    ]
   },
   {
     "alpha2": "AS",
     "alpha3": "ASM",
-    "name": "American Samoa"
+    "name": "American Samoa",
+    "countryCallingCodes": [
+      "+1 684"
+    ]
   },
   {
     "alpha2": "AD",
     "alpha3": "AND",
-    "name": "Andorra"
+    "name": "Andorra",
+    "countryCallingCodes": [
+      "+376"
+    ]
   },
   {
     "alpha2": "AO",
     "alpha3": "AGO",
-    "name": "Angola"
+    "name": "Angola",
+    "countryCallingCodes": [
+      "+244"
+    ]
   },
   {
     "alpha2": "AI",
     "alpha3": "AIA",
-    "name": "Anguilla"
+    "name": "Anguilla",
+    "countryCallingCodes": [
+      "+1 264"
+    ]
   },
   {
     "alpha2": "AQ",
     "alpha3": "ATA",
-    "name": "Antarctica"
+    "name": "Antarctica",
+    "countryCallingCodes": [
+      "+672"
+    ]
   },
   {
     "alpha2": "AG",
     "alpha3": "ATG",
-    "name": "Antigua And Barbuda"
+    "name": "Antigua And Barbuda",
+    "countryCallingCodes": [
+      "+1 268"
+    ]
   },
   {
     "alpha2": "AR",
     "alpha3": "ARG",
-    "name": "Argentina"
+    "name": "Argentina",
+    "countryCallingCodes": [
+      "+54"
+    ]
   },
   {
     "alpha2": "AM",
     "alpha3": "ARM",
-    "name": "Armenia"
+    "name": "Armenia",
+    "countryCallingCodes": [
+      "+374"
+    ]
   },
   {
     "alpha2": "AW",
     "alpha3": "ABW",
-    "name": "Aruba"
+    "name": "Aruba",
+    "countryCallingCodes": [
+      "+297"
+    ]
   },
   {
     "alpha2": "AU",
     "alpha3": "AUS",
-    "name": "Australia"
+    "name": "Australia",
+    "countryCallingCodes": [
+      "+61"
+    ]
   },
   {
     "alpha2": "AT",
     "alpha3": "AUT",
-    "name": "Austria"
+    "name": "Austria",
+    "countryCallingCodes": [
+      "+43"
+    ]
   },
   {
     "alpha2": "AZ",
     "alpha3": "AZE",
-    "name": "Azerbaijan"
+    "name": "Azerbaijan",
+    "countryCallingCodes": [
+      "+994"
+    ]
   },
   {
     "alpha2": "BS",
     "alpha3": "BHS",
-    "name": "Bahamas"
+    "name": "Bahamas",
+    "countryCallingCodes": [
+      "+1 242"
+    ]
   },
   {
     "alpha2": "BH",
     "alpha3": "BHR",
-    "name": "Bahrain"
+    "name": "Bahrain",
+    "countryCallingCodes": [
+      "+973"
+    ]
   },
   {
     "alpha2": "BD",
     "alpha3": "BGD",
-    "name": "Bangladesh"
+    "name": "Bangladesh",
+    "countryCallingCodes": [
+      "+880"
+    ]
   },
   {
     "alpha2": "BB",
     "alpha3": "BRB",
-    "name": "Barbados"
+    "name": "Barbados",
+    "countryCallingCodes": [
+      "+1 246"
+    ]
   },
   {
     "alpha2": "BY",
     "alpha3": "BLR",
-    "name": "Belarus"
+    "name": "Belarus",
+    "countryCallingCodes": [
+      "+375"
+    ]
   },
   {
     "alpha2": "BE",
     "alpha3": "BEL",
-    "name": "Belgium"
+    "name": "Belgium",
+    "countryCallingCodes": [
+      "+32"
+    ]
   },
   {
     "alpha2": "BZ",
     "alpha3": "BLZ",
-    "name": "Belize"
+    "name": "Belize",
+    "countryCallingCodes": [
+      "+501"
+    ]
   },
   {
     "alpha2": "BJ",
     "alpha3": "BEN",
-    "name": "Benin"
+    "name": "Benin",
+    "countryCallingCodes": [
+      "+229"
+    ]
   },
   {
     "alpha2": "BM",
     "alpha3": "BMU",
-    "name": "Bermuda"
+    "name": "Bermuda",
+    "countryCallingCodes": [
+      "+1 441"
+    ]
   },
   {
     "alpha2": "BT",
     "alpha3": "BTN",
-    "name": "Bhutan"
+    "name": "Bhutan",
+    "countryCallingCodes": [
+      "+975"
+    ]
   },
   {
     "alpha2": "BO",
     "alpha3": "BOL",
-    "name": "Bolivia, Plurinational State Of"
+    "name": "Bolivia, Plurinational State Of",
+    "countryCallingCodes": [
+      "+591"
+    ]
   },
   {
     "alpha2": "BQ",
     "alpha3": "BES",
-    "name": "Bonaire, Sint Eustatius And Saba"
+    "name": "Bonaire, Sint Eustatius And Saba",
+    "countryCallingCodes": [
+      "+599"
+    ]
   },
   {
     "alpha2": "BA",
     "alpha3": "BIH",
-    "name": "Bosnia & Herzegovina"
+    "name": "Bosnia & Herzegovina",
+    "countryCallingCodes": [
+      "+387"
+    ]
   },
   {
     "alpha2": "BW",
     "alpha3": "BWA",
-    "name": "Botswana"
+    "name": "Botswana",
+    "countryCallingCodes": [
+      "+267"
+    ]
   },
   {
     "alpha2": "BV",
     "alpha3": "BVT",
-    "name": "Bouvet Island"
+    "name": "Bouvet Island",
+    "countryCallingCodes": []
   },
   {
     "alpha2": "BR",
     "alpha3": "BRA",
-    "name": "Brazil"
+    "name": "Brazil",
+    "countryCallingCodes": [
+      "+55"
+    ]
   },
   {
     "alpha2": "IO",
     "alpha3": "IOT",
-    "name": "British Indian Ocean Territory"
+    "name": "British Indian Ocean Territory",
+    "countryCallingCodes": [
+      "+246"
+    ]
   },
   {
     "alpha2": "BN",
     "alpha3": "BRN",
-    "name": "Brunei Darussalam"
+    "name": "Brunei Darussalam",
+    "countryCallingCodes": [
+      "+673"
+    ]
   },
   {
     "alpha2": "BG",
     "alpha3": "BGR",
-    "name": "Bulgaria"
+    "name": "Bulgaria",
+    "countryCallingCodes": [
+      "+359"
+    ]
   },
   {
     "alpha2": "BF",
     "alpha3": "BFA",
-    "name": "Burkina Faso"
+    "name": "Burkina Faso",
+    "countryCallingCodes": [
+      "+226"
+    ]
   },
   {
     "alpha2": "BI",
     "alpha3": "BDI",
-    "name": "Burundi"
+    "name": "Burundi",
+    "countryCallingCodes": [
+      "+257"
+    ]
   },
   {
     "alpha2": "CV",
     "alpha3": "CPV",
-    "name": "Cabo Verde"
+    "name": "Cabo Verde",
+    "countryCallingCodes": [
+      "+238"
+    ]
   },
   {
     "alpha2": "KH",
     "alpha3": "KHM",
-    "name": "Cambodia"
+    "name": "Cambodia",
+    "countryCallingCodes": [
+      "+855"
+    ]
   },
   {
     "alpha2": "CM",
     "alpha3": "CMR",
-    "name": "Cameroon"
+    "name": "Cameroon",
+    "countryCallingCodes": [
+      "+237"
+    ]
   },
   {
     "alpha2": "CA",
     "alpha3": "CAN",
-    "name": "Canada"
+    "name": "Canada",
+    "countryCallingCodes": [
+      "+1"
+    ]
   },
   {
     "alpha2": "KY",
     "alpha3": "CYM",
-    "name": "Cayman Islands"
+    "name": "Cayman Islands",
+    "countryCallingCodes": [
+      "+1 345"
+    ]
   },
   {
     "alpha2": "CF",
     "alpha3": "CAF",
-    "name": "Central African Republic"
+    "name": "Central African Republic",
+    "countryCallingCodes": [
+      "+236"
+    ]
   },
   {
     "alpha2": "TD",
     "alpha3": "TCD",
-    "name": "Chad"
+    "name": "Chad",
+    "countryCallingCodes": [
+      "+235"
+    ]
   },
   {
     "alpha2": "CL",
     "alpha3": "CHL",
-    "name": "Chile"
+    "name": "Chile",
+    "countryCallingCodes": [
+      "+56"
+    ]
   },
   {
     "alpha2": "CN",
     "alpha3": "CHN",
-    "name": "China"
+    "name": "China",
+    "countryCallingCodes": [
+      "+86"
+    ]
   },
   {
     "alpha2": "CX",
     "alpha3": "CXR",
-    "name": "Christmas Island"
+    "name": "Christmas Island",
+    "countryCallingCodes": [
+      "+61"
+    ]
   },
   {
     "alpha2": "CC",
     "alpha3": "CCK",
-    "name": "Cocos (Keeling) Islands"
+    "name": "Cocos (Keeling) Islands",
+    "countryCallingCodes": [
+      "+61"
+    ]
   },
   {
     "alpha2": "CO",
     "alpha3": "COL",
-    "name": "Colombia"
+    "name": "Colombia",
+    "countryCallingCodes": [
+      "+57"
+    ]
   },
   {
     "alpha2": "KM",
     "alpha3": "COM",
-    "name": "Comoros"
+    "name": "Comoros",
+    "countryCallingCodes": [
+      "+269"
+    ]
   },
   {
     "alpha2": "CK",
     "alpha3": "COK",
-    "name": "Cook Islands"
+    "name": "Cook Islands",
+    "countryCallingCodes": [
+      "+682"
+    ]
   },
   {
     "alpha2": "CR",
     "alpha3": "CRI",
-    "name": "Costa Rica"
+    "name": "Costa Rica",
+    "countryCallingCodes": [
+      "+506"
+    ]
   },
   {
     "alpha2": "CI",
     "alpha3": "CIV",
-    "name": "Côte d'Ivoire"
+    "name": "Côte d'Ivoire",
+    "countryCallingCodes": [
+      "+225"
+    ]
   },
   {
     "alpha2": "HR",
     "alpha3": "HRV",
-    "name": "Croatia"
+    "name": "Croatia",
+    "countryCallingCodes": [
+      "+385"
+    ]
   },
   {
     "alpha2": "CU",
     "alpha3": "CUB",
-    "name": "Cuba"
+    "name": "Cuba",
+    "countryCallingCodes": [
+      "+53"
+    ]
   },
   {
     "alpha2": "CW",
     "alpha3": "CUW",
-    "name": "Curacao"
+    "name": "Curacao",
+    "countryCallingCodes": [
+      "+599"
+    ]
   },
   {
     "alpha2": "CY",
     "alpha3": "CYP",
-    "name": "Cyprus"
+    "name": "Cyprus",
+    "countryCallingCodes": [
+      "+357"
+    ]
   },
   {
     "alpha2": "CZ",
     "alpha3": "CZE",
-    "name": "Czech Republic"
+    "name": "Czech Republic",
+    "countryCallingCodes": [
+      "+420"
+    ]
   },
   {
     "alpha2": "CD",
     "alpha3": "COD",
-    "name": "Democratic Republic Of Congo"
+    "name": "Democratic Republic Of Congo",
+    "countryCallingCodes": [
+      "+243"
+    ]
   },
   {
     "alpha2": "DK",
     "alpha3": "DNK",
-    "name": "Denmark"
+    "name": "Denmark",
+    "countryCallingCodes": [
+      "+45"
+    ]
   },
   {
     "alpha2": "DJ",
     "alpha3": "DJI",
-    "name": "Djibouti"
+    "name": "Djibouti",
+    "countryCallingCodes": [
+      "+253"
+    ]
   },
   {
     "alpha2": "DM",
     "alpha3": "DMA",
-    "name": "Dominica"
+    "name": "Dominica",
+    "countryCallingCodes": [
+      "+1 767"
+    ]
   },
   {
     "alpha2": "DO",
     "alpha3": "DOM",
-    "name": "Dominican Republic"
+    "name": "Dominican Republic",
+    "countryCallingCodes": [
+      "+1 809",
+      "+1 829",
+      "+1 849"
+    ]
   },
   {
     "alpha2": "EC",
     "alpha3": "ECU",
-    "name": "Ecuador"
+    "name": "Ecuador",
+    "countryCallingCodes": [
+      "+593"
+    ]
   },
   {
     "alpha2": "EG",
     "alpha3": "EGY",
-    "name": "Egypt"
+    "name": "Egypt",
+    "countryCallingCodes": [
+      "+20"
+    ]
   },
   {
     "alpha2": "SV",
     "alpha3": "SLV",
-    "name": "El Salvador"
+    "name": "El Salvador",
+    "countryCallingCodes": [
+      "+503"
+    ]
   },
   {
     "alpha2": "GQ",
     "alpha3": "GNQ",
-    "name": "Equatorial Guinea"
+    "name": "Equatorial Guinea",
+    "countryCallingCodes": [
+      "+240"
+    ]
   },
   {
     "alpha2": "ER",
     "alpha3": "ERI",
-    "name": "Eritrea"
+    "name": "Eritrea",
+    "countryCallingCodes": [
+      "+291"
+    ]
   },
   {
     "alpha2": "EE",
     "alpha3": "EST",
-    "name": "Estonia"
+    "name": "Estonia",
+    "countryCallingCodes": [
+      "+372"
+    ]
   },
   {
     "alpha2": "SZ",
     "alpha3": "SWZ",
-    "name": "Eswatini"
+    "name": "Eswatini",
+    "countryCallingCodes": [
+      "+268"
+    ]
   },
   {
     "alpha2": "ET",
     "alpha3": "ETH",
-    "name": "Ethiopia"
+    "name": "Ethiopia",
+    "countryCallingCodes": [
+      "+251"
+    ]
   },
   {
     "alpha2": "FK",
     "alpha3": "FLK",
-    "name": "Falkland Islands"
+    "name": "Falkland Islands",
+    "countryCallingCodes": [
+      "+500"
+    ]
   },
   {
     "alpha2": "FO",
     "alpha3": "FRO",
-    "name": "Faroe Islands"
+    "name": "Faroe Islands",
+    "countryCallingCodes": [
+      "+298"
+    ]
   },
   {
     "alpha2": "FJ",
     "alpha3": "FJI",
-    "name": "Fiji"
+    "name": "Fiji",
+    "countryCallingCodes": [
+      "+679"
+    ]
   },
   {
     "alpha2": "FI",
     "alpha3": "FIN",
-    "name": "Finland"
+    "name": "Finland",
+    "countryCallingCodes": [
+      "+358"
+    ]
   },
   {
     "alpha2": "FR",
     "alpha3": "FRA",
-    "name": "France"
+    "name": "France",
+    "countryCallingCodes": [
+      "+33"
+    ]
   },
   {
     "alpha2": "GF",
     "alpha3": "GUF",
-    "name": "French Guiana"
+    "name": "French Guiana",
+    "countryCallingCodes": [
+      "+594"
+    ]
   },
   {
     "alpha2": "PF",
     "alpha3": "PYF",
-    "name": "French Polynesia"
+    "name": "French Polynesia",
+    "countryCallingCodes": [
+      "+689"
+    ]
   },
   {
     "alpha2": "TF",
     "alpha3": "ATF",
-    "name": "French Southern Territories"
+    "name": "French Southern Territories",
+    "countryCallingCodes": []
   },
   {
     "alpha2": "GA",
     "alpha3": "GAB",
-    "name": "Gabon"
+    "name": "Gabon",
+    "countryCallingCodes": [
+      "+241"
+    ]
   },
   {
     "alpha2": "GM",
     "alpha3": "GMB",
-    "name": "Gambia"
+    "name": "Gambia",
+    "countryCallingCodes": [
+      "+220"
+    ]
   },
   {
     "alpha2": "GE",
     "alpha3": "GEO",
-    "name": "Georgia"
+    "name": "Georgia",
+    "countryCallingCodes": [
+      "+995"
+    ]
   },
   {
     "alpha2": "DE",
     "alpha3": "DEU",
-    "name": "Germany"
+    "name": "Germany",
+    "countryCallingCodes": [
+      "+49"
+    ]
   },
   {
     "alpha2": "GH",
     "alpha3": "GHA",
-    "name": "Ghana"
+    "name": "Ghana",
+    "countryCallingCodes": [
+      "+233"
+    ]
   },
   {
     "alpha2": "GI",
     "alpha3": "GIB",
-    "name": "Gibraltar"
+    "name": "Gibraltar",
+    "countryCallingCodes": [
+      "+350"
+    ]
   },
   {
     "alpha2": "GR",
     "alpha3": "GRC",
-    "name": "Greece"
+    "name": "Greece",
+    "countryCallingCodes": [
+      "+30"
+    ]
   },
   {
     "alpha2": "GL",
     "alpha3": "GRL",
-    "name": "Greenland"
+    "name": "Greenland",
+    "countryCallingCodes": [
+      "+299"
+    ]
   },
   {
     "alpha2": "GD",
     "alpha3": "GRD",
-    "name": "Grenada"
+    "name": "Grenada",
+    "countryCallingCodes": [
+      "+473"
+    ]
   },
   {
     "alpha2": "GP",
     "alpha3": "GLP",
-    "name": "Guadeloupe"
+    "name": "Guadeloupe",
+    "countryCallingCodes": [
+      "+590"
+    ]
   },
   {
     "alpha2": "GU",
     "alpha3": "GUM",
-    "name": "Guam"
+    "name": "Guam",
+    "countryCallingCodes": [
+      "+1 671"
+    ]
   },
   {
     "alpha2": "GT",
     "alpha3": "GTM",
-    "name": "Guatemala"
+    "name": "Guatemala",
+    "countryCallingCodes": [
+      "+502"
+    ]
   },
   {
     "alpha2": "GG",
     "alpha3": "GGY",
-    "name": "Guernsey"
+    "name": "Guernsey",
+    "countryCallingCodes": [
+      "+44"
+    ]
   },
   {
     "alpha2": "GN",
     "alpha3": "GIN",
-    "name": "Guinea"
+    "name": "Guinea",
+    "countryCallingCodes": [
+      "+224"
+    ]
   },
   {
     "alpha2": "GW",
     "alpha3": "GNB",
-    "name": "Guinea-bissau"
+    "name": "Guinea-bissau",
+    "countryCallingCodes": [
+      "+245"
+    ]
   },
   {
     "alpha2": "GY",
     "alpha3": "GUY",
-    "name": "Guyana"
+    "name": "Guyana",
+    "countryCallingCodes": [
+      "+592"
+    ]
   },
   {
     "alpha2": "HT",
     "alpha3": "HTI",
-    "name": "Haiti"
+    "name": "Haiti",
+    "countryCallingCodes": [
+      "+509"
+    ]
   },
   {
     "alpha2": "HM",
     "alpha3": "HMD",
-    "name": "Heard Island And McDonald Islands"
+    "name": "Heard Island And McDonald Islands",
+    "countryCallingCodes": []
   },
   {
     "alpha2": "HN",
     "alpha3": "HND",
-    "name": "Honduras"
+    "name": "Honduras",
+    "countryCallingCodes": [
+      "+504"
+    ]
   },
   {
     "alpha2": "HK",
     "alpha3": "HKG",
-    "name": "Hong Kong"
+    "name": "Hong Kong",
+    "countryCallingCodes": [
+      "+852"
+    ]
   },
   {
     "alpha2": "HU",
     "alpha3": "HUN",
-    "name": "Hungary"
+    "name": "Hungary",
+    "countryCallingCodes": [
+      "+36"
+    ]
   },
   {
     "alpha2": "IS",
     "alpha3": "ISL",
-    "name": "Iceland"
+    "name": "Iceland",
+    "countryCallingCodes": [
+      "+354"
+    ]
   },
   {
     "alpha2": "IN",
     "alpha3": "IND",
-    "name": "India"
+    "name": "India",
+    "countryCallingCodes": [
+      "+91"
+    ]
   },
   {
     "alpha2": "ID",
     "alpha3": "IDN",
-    "name": "Indonesia"
+    "name": "Indonesia",
+    "countryCallingCodes": [
+      "+62"
+    ]
   },
   {
     "alpha2": "IR",
     "alpha3": "IRN",
-    "name": "Iran, Islamic Republic Of"
+    "name": "Iran, Islamic Republic Of",
+    "countryCallingCodes": [
+      "+98"
+    ]
   },
   {
     "alpha2": "IQ",
     "alpha3": "IRQ",
-    "name": "Iraq"
+    "name": "Iraq",
+    "countryCallingCodes": [
+      "+964"
+    ]
   },
   {
     "alpha2": "IE",
     "alpha3": "IRL",
-    "name": "Ireland"
+    "name": "Ireland",
+    "countryCallingCodes": [
+      "+353"
+    ]
   },
   {
     "alpha2": "IM",
     "alpha3": "IMN",
-    "name": "Isle Of Man"
+    "name": "Isle Of Man",
+    "countryCallingCodes": [
+      "+44"
+    ]
   },
   {
     "alpha2": "IL",
     "alpha3": "ISR",
-    "name": "Israel"
+    "name": "Israel",
+    "countryCallingCodes": [
+      "+972"
+    ]
   },
   {
     "alpha2": "IT",
     "alpha3": "ITA",
-    "name": "Italy"
+    "name": "Italy",
+    "countryCallingCodes": [
+      "+39"
+    ]
   },
   {
     "alpha2": "JM",
     "alpha3": "JAM",
-    "name": "Jamaica"
+    "name": "Jamaica",
+    "countryCallingCodes": [
+      "+1 876"
+    ]
   },
   {
     "alpha2": "JP",
     "alpha3": "JPN",
-    "name": "Japan"
+    "name": "Japan",
+    "countryCallingCodes": [
+      "+81"
+    ]
   },
   {
     "alpha2": "JE",
     "alpha3": "JEY",
-    "name": "Jersey"
+    "name": "Jersey",
+    "countryCallingCodes": [
+      "+44"
+    ]
   },
   {
     "alpha2": "JO",
     "alpha3": "JOR",
-    "name": "Jordan"
+    "name": "Jordan",
+    "countryCallingCodes": [
+      "+962"
+    ]
   },
   {
     "alpha2": "KZ",
     "alpha3": "KAZ",
-    "name": "Kazakhstan"
+    "name": "Kazakhstan",
+    "countryCallingCodes": [
+      "+7",
+      "+7 6",
+      "+7 7"
+    ]
   },
   {
     "alpha2": "KE",
     "alpha3": "KEN",
-    "name": "Kenya"
+    "name": "Kenya",
+    "countryCallingCodes": [
+      "+254"
+    ]
   },
   {
     "alpha2": "KI",
     "alpha3": "KIR",
-    "name": "Kiribati"
+    "name": "Kiribati",
+    "countryCallingCodes": [
+      "+686"
+    ]
   },
   {
     "alpha2": "KP",
     "alpha3": "PRK",
-    "name": "Korea, Democratic People's Republic Of"
+    "name": "Korea, Democratic People's Republic Of",
+    "countryCallingCodes": [
+      "+850"
+    ]
   },
   {
     "alpha2": "KR",
     "alpha3": "KOR",
-    "name": "Korea, Republic Of"
+    "name": "Korea, Republic Of",
+    "countryCallingCodes": [
+      "+82"
+    ]
   },
   {
     "alpha2": "KW",
     "alpha3": "KWT",
-    "name": "Kuwait"
+    "name": "Kuwait",
+    "countryCallingCodes": [
+      "+965"
+    ]
   },
   {
     "alpha2": "KG",
     "alpha3": "KGZ",
-    "name": "Kyrgyzstan"
+    "name": "Kyrgyzstan",
+    "countryCallingCodes": [
+      "+996"
+    ]
   },
   {
     "alpha2": "LA",
     "alpha3": "LAO",
-    "name": "Lao People's Democratic Republic"
+    "name": "Lao People's Democratic Republic",
+    "countryCallingCodes": [
+      "+856"
+    ]
   },
   {
     "alpha2": "LV",
     "alpha3": "LVA",
-    "name": "Latvia"
+    "name": "Latvia",
+    "countryCallingCodes": [
+      "+371"
+    ]
   },
   {
     "alpha2": "LB",
     "alpha3": "LBN",
-    "name": "Lebanon"
+    "name": "Lebanon",
+    "countryCallingCodes": [
+      "+961"
+    ]
   },
   {
     "alpha2": "LS",
     "alpha3": "LSO",
-    "name": "Lesotho"
+    "name": "Lesotho",
+    "countryCallingCodes": [
+      "+266"
+    ]
   },
   {
     "alpha2": "LR",
     "alpha3": "LBR",
-    "name": "Liberia"
+    "name": "Liberia",
+    "countryCallingCodes": [
+      "+231"
+    ]
   },
   {
     "alpha2": "LY",
     "alpha3": "LBY",
-    "name": "Libya"
+    "name": "Libya",
+    "countryCallingCodes": [
+      "+218"
+    ]
   },
   {
     "alpha2": "LI",
     "alpha3": "LIE",
-    "name": "Liechtenstein"
+    "name": "Liechtenstein",
+    "countryCallingCodes": [
+      "+423"
+    ]
   },
   {
     "alpha2": "LT",
     "alpha3": "LTU",
-    "name": "Lithuania"
+    "name": "Lithuania",
+    "countryCallingCodes": [
+      "+370"
+    ]
   },
   {
     "alpha2": "LU",
     "alpha3": "LUX",
-    "name": "Luxembourg"
+    "name": "Luxembourg",
+    "countryCallingCodes": [
+      "+352"
+    ]
   },
   {
     "alpha2": "MO",
     "alpha3": "MAC",
-    "name": "Macao"
+    "name": "Macao",
+    "countryCallingCodes": [
+      "+853"
+    ]
   },
   {
     "alpha2": "MG",
     "alpha3": "MDG",
-    "name": "Madagascar"
+    "name": "Madagascar",
+    "countryCallingCodes": [
+      "+261"
+    ]
   },
   {
     "alpha2": "MW",
     "alpha3": "MWI",
-    "name": "Malawi"
+    "name": "Malawi",
+    "countryCallingCodes": [
+      "+265"
+    ]
   },
   {
     "alpha2": "MY",
     "alpha3": "MYS",
-    "name": "Malaysia"
+    "name": "Malaysia",
+    "countryCallingCodes": [
+      "+60"
+    ]
   },
   {
     "alpha2": "MV",
     "alpha3": "MDV",
-    "name": "Maldives"
+    "name": "Maldives",
+    "countryCallingCodes": [
+      "+960"
+    ]
   },
   {
     "alpha2": "ML",
     "alpha3": "MLI",
-    "name": "Mali"
+    "name": "Mali",
+    "countryCallingCodes": [
+      "+223"
+    ]
   },
   {
     "alpha2": "MT",
     "alpha3": "MLT",
-    "name": "Malta"
+    "name": "Malta",
+    "countryCallingCodes": [
+      "+356"
+    ]
   },
   {
     "alpha2": "MH",
     "alpha3": "MHL",
-    "name": "Marshall Islands"
+    "name": "Marshall Islands",
+    "countryCallingCodes": [
+      "+692"
+    ]
   },
   {
     "alpha2": "MQ",
     "alpha3": "MTQ",
-    "name": "Martinique"
+    "name": "Martinique",
+    "countryCallingCodes": [
+      "+596"
+    ]
   },
   {
     "alpha2": "MR",
     "alpha3": "MRT",
-    "name": "Mauritania"
+    "name": "Mauritania",
+    "countryCallingCodes": [
+      "+222"
+    ]
   },
   {
     "alpha2": "MU",
     "alpha3": "MUS",
-    "name": "Mauritius"
+    "name": "Mauritius",
+    "countryCallingCodes": [
+      "+230"
+    ]
   },
   {
     "alpha2": "YT",
     "alpha3": "MYT",
-    "name": "Mayotte"
+    "name": "Mayotte",
+    "countryCallingCodes": [
+      "+262"
+    ]
   },
   {
     "alpha2": "MX",
     "alpha3": "MEX",
-    "name": "Mexico"
+    "name": "Mexico",
+    "countryCallingCodes": [
+      "+52"
+    ]
   },
   {
     "alpha2": "FM",
     "alpha3": "FSM",
-    "name": "Micronesia, Federated States Of"
+    "name": "Micronesia, Federated States Of",
+    "countryCallingCodes": [
+      "+691"
+    ]
   },
   {
     "alpha2": "MD",
     "alpha3": "MDA",
-    "name": "Moldova"
+    "name": "Moldova",
+    "countryCallingCodes": [
+      "+373"
+    ]
   },
   {
     "alpha2": "MC",
     "alpha3": "MCO",
-    "name": "Monaco"
+    "name": "Monaco",
+    "countryCallingCodes": [
+      "+377"
+    ]
   },
   {
     "alpha2": "MN",
     "alpha3": "MNG",
-    "name": "Mongolia"
+    "name": "Mongolia",
+    "countryCallingCodes": [
+      "+976"
+    ]
   },
   {
     "alpha2": "ME",
     "alpha3": "MNE",
-    "name": "Montenegro"
+    "name": "Montenegro",
+    "countryCallingCodes": [
+      "+382"
+    ]
   },
   {
     "alpha2": "MS",
     "alpha3": "MSR",
-    "name": "Montserrat"
+    "name": "Montserrat",
+    "countryCallingCodes": [
+      "+1 664"
+    ]
   },
   {
     "alpha2": "MA",
     "alpha3": "MAR",
-    "name": "Morocco"
+    "name": "Morocco",
+    "countryCallingCodes": [
+      "+212"
+    ]
   },
   {
     "alpha2": "MZ",
     "alpha3": "MOZ",
-    "name": "Mozambique"
+    "name": "Mozambique",
+    "countryCallingCodes": [
+      "+258"
+    ]
   },
   {
     "alpha2": "MM",
     "alpha3": "MMR",
-    "name": "Myanmar"
+    "name": "Myanmar",
+    "countryCallingCodes": [
+      "+95"
+    ]
   },
   {
     "alpha2": "NA",
     "alpha3": "NAM",
-    "name": "Namibia"
+    "name": "Namibia",
+    "countryCallingCodes": [
+      "+264"
+    ]
   },
   {
     "alpha2": "NR",
     "alpha3": "NRU",
-    "name": "Nauru"
+    "name": "Nauru",
+    "countryCallingCodes": [
+      "+674"
+    ]
   },
   {
     "alpha2": "NP",
     "alpha3": "NPL",
-    "name": "Nepal"
+    "name": "Nepal",
+    "countryCallingCodes": [
+      "+977"
+    ]
   },
   {
     "alpha2": "NL",
     "alpha3": "NLD",
-    "name": "Netherlands"
+    "name": "Netherlands",
+    "countryCallingCodes": [
+      "+31"
+    ]
   },
   {
     "alpha2": "NC",
     "alpha3": "NCL",
-    "name": "New Caledonia"
+    "name": "New Caledonia",
+    "countryCallingCodes": [
+      "+687"
+    ]
   },
   {
     "alpha2": "NZ",
     "alpha3": "NZL",
-    "name": "New Zealand"
+    "name": "New Zealand",
+    "countryCallingCodes": [
+      "+64"
+    ]
   },
   {
     "alpha2": "NI",
     "alpha3": "NIC",
-    "name": "Nicaragua"
+    "name": "Nicaragua",
+    "countryCallingCodes": [
+      "+505"
+    ]
   },
   {
     "alpha2": "NE",
     "alpha3": "NER",
-    "name": "Niger"
+    "name": "Niger",
+    "countryCallingCodes": [
+      "+227"
+    ]
   },
   {
     "alpha2": "NG",
     "alpha3": "NGA",
-    "name": "Nigeria"
+    "name": "Nigeria",
+    "countryCallingCodes": [
+      "+234"
+    ]
   },
   {
     "alpha2": "NU",
     "alpha3": "NIU",
-    "name": "Niue"
+    "name": "Niue",
+    "countryCallingCodes": [
+      "+683"
+    ]
   },
   {
     "alpha2": "NF",
     "alpha3": "NFK",
-    "name": "Norfolk Island"
+    "name": "Norfolk Island",
+    "countryCallingCodes": [
+      "+672"
+    ]
   },
   {
     "alpha2": "MK",
     "alpha3": "MKD",
-    "name": "North Macedonia"
+    "name": "North Macedonia",
+    "countryCallingCodes": [
+      "+389"
+    ]
   },
   {
     "alpha2": "MP",
     "alpha3": "MNP",
-    "name": "Northern Mariana Islands"
+    "name": "Northern Mariana Islands",
+    "countryCallingCodes": [
+      "+1 670"
+    ]
   },
   {
     "alpha2": "NO",
     "alpha3": "NOR",
-    "name": "Norway"
+    "name": "Norway",
+    "countryCallingCodes": [
+      "+47"
+    ]
   },
   {
     "alpha2": "OM",
     "alpha3": "OMN",
-    "name": "Oman"
+    "name": "Oman",
+    "countryCallingCodes": [
+      "+968"
+    ]
   },
   {
     "alpha2": "PK",
     "alpha3": "PAK",
-    "name": "Pakistan"
+    "name": "Pakistan",
+    "countryCallingCodes": [
+      "+92"
+    ]
   },
   {
     "alpha2": "PW",
     "alpha3": "PLW",
-    "name": "Palau"
+    "name": "Palau",
+    "countryCallingCodes": [
+      "+680"
+    ]
   },
   {
     "alpha2": "PS",
     "alpha3": "PSE",
-    "name": "Palestinian Territory, Occupied"
+    "name": "Palestinian Territory, Occupied",
+    "countryCallingCodes": [
+      "+970"
+    ]
   },
   {
     "alpha2": "PA",
     "alpha3": "PAN",
-    "name": "Panama"
+    "name": "Panama",
+    "countryCallingCodes": [
+      "+507"
+    ]
   },
   {
     "alpha2": "PG",
     "alpha3": "PNG",
-    "name": "Papua New Guinea"
+    "name": "Papua New Guinea",
+    "countryCallingCodes": [
+      "+675"
+    ]
   },
   {
     "alpha2": "PY",
     "alpha3": "PRY",
-    "name": "Paraguay"
+    "name": "Paraguay",
+    "countryCallingCodes": [
+      "+595"
+    ]
   },
   {
     "alpha2": "PE",
     "alpha3": "PER",
-    "name": "Peru"
+    "name": "Peru",
+    "countryCallingCodes": [
+      "+51"
+    ]
   },
   {
     "alpha2": "PH",
     "alpha3": "PHL",
-    "name": "Philippines"
+    "name": "Philippines",
+    "countryCallingCodes": [
+      "+63"
+    ]
   },
   {
     "alpha2": "PN",
     "alpha3": "PCN",
-    "name": "Pitcairn"
+    "name": "Pitcairn",
+    "countryCallingCodes": [
+      "+872"
+    ]
   },
   {
     "alpha2": "PL",
     "alpha3": "POL",
-    "name": "Poland"
+    "name": "Poland",
+    "countryCallingCodes": [
+      "+48"
+    ]
   },
   {
     "alpha2": "PT",
     "alpha3": "PRT",
-    "name": "Portugal"
+    "name": "Portugal",
+    "countryCallingCodes": [
+      "+351"
+    ]
   },
   {
     "alpha2": "PR",
     "alpha3": "PRI",
-    "name": "Puerto Rico"
+    "name": "Puerto Rico",
+    "countryCallingCodes": [
+      "+1 787",
+      "+1 939"
+    ]
   },
   {
     "alpha2": "QA",
     "alpha3": "QAT",
-    "name": "Qatar"
+    "name": "Qatar",
+    "countryCallingCodes": [
+      "+974"
+    ]
   },
   {
     "alpha2": "CG",
     "alpha3": "COG",
-    "name": "Republic Of Congo"
+    "name": "Republic Of Congo",
+    "countryCallingCodes": [
+      "+242"
+    ]
   },
   {
     "alpha2": "RE",
     "alpha3": "REU",
-    "name": "Reunion"
+    "name": "Reunion",
+    "countryCallingCodes": [
+      "+262"
+    ]
   },
   {
     "alpha2": "RO",
     "alpha3": "ROU",
-    "name": "Romania"
+    "name": "Romania",
+    "countryCallingCodes": [
+      "+40"
+    ]
   },
   {
     "alpha2": "RU",
     "alpha3": "RUS",
-    "name": "Russia"
+    "name": "Russia",
+    "countryCallingCodes": [
+      "+7",
+      "+7 3",
+      "+7 4",
+      "+7 8"
+    ]
   },
   {
     "alpha2": "RW",
     "alpha3": "RWA",
-    "name": "Rwanda"
+    "name": "Rwanda",
+    "countryCallingCodes": [
+      "+250"
+    ]
   },
   {
     "alpha2": "BL",
     "alpha3": "BLM",
-    "name": "Saint Barthélemy"
+    "name": "Saint Barthélemy",
+    "countryCallingCodes": [
+      "+590"
+    ]
   },
   {
     "alpha2": "SH",
     "alpha3": "SHN",
-    "name": "Saint Helena, Ascension And Tristan Da Cunha"
+    "name": "Saint Helena, Ascension And Tristan Da Cunha",
+    "countryCallingCodes": [
+      "+290"
+    ]
   },
   {
     "alpha2": "KN",
     "alpha3": "KNA",
-    "name": "Saint Kitts And Nevis"
+    "name": "Saint Kitts And Nevis",
+    "countryCallingCodes": [
+      "+1 869"
+    ]
   },
   {
     "alpha2": "LC",
     "alpha3": "LCA",
-    "name": "Saint Lucia"
+    "name": "Saint Lucia",
+    "countryCallingCodes": [
+      "+1 758"
+    ]
   },
   {
     "alpha2": "MF",
     "alpha3": "MAF",
-    "name": "Saint Martin"
+    "name": "Saint Martin",
+    "countryCallingCodes": [
+      "+590"
+    ]
   },
   {
     "alpha2": "PM",
     "alpha3": "SPM",
-    "name": "Saint Pierre And Miquelon"
+    "name": "Saint Pierre And Miquelon",
+    "countryCallingCodes": [
+      "+508"
+    ]
   },
   {
     "alpha2": "VC",
     "alpha3": "VCT",
-    "name": "Saint Vincent And The Grenadines"
+    "name": "Saint Vincent And The Grenadines",
+    "countryCallingCodes": [
+      "+1 784"
+    ]
   },
   {
     "alpha2": "WS",
     "alpha3": "WSM",
-    "name": "Samoa"
+    "name": "Samoa",
+    "countryCallingCodes": [
+      "+685"
+    ]
   },
   {
     "alpha2": "SM",
     "alpha3": "SMR",
-    "name": "San Marino"
+    "name": "San Marino",
+    "countryCallingCodes": [
+      "+378"
+    ]
   },
   {
     "alpha2": "ST",
     "alpha3": "STP",
-    "name": "Sao Tome and Principe"
+    "name": "Sao Tome and Principe",
+    "countryCallingCodes": [
+      "+239"
+    ]
   },
   {
     "alpha2": "SA",
     "alpha3": "SAU",
-    "name": "Saudi Arabia"
+    "name": "Saudi Arabia",
+    "countryCallingCodes": [
+      "+966"
+    ]
   },
   {
     "alpha2": "SN",
     "alpha3": "SEN",
-    "name": "Senegal"
+    "name": "Senegal",
+    "countryCallingCodes": [
+      "+221"
+    ]
   },
   {
     "alpha2": "RS",
     "alpha3": "SRB",
-    "name": "Serbia"
+    "name": "Serbia",
+    "countryCallingCodes": [
+      "+381"
+    ]
   },
   {
     "alpha2": "SC",
     "alpha3": "SYC",
-    "name": "Seychelles"
+    "name": "Seychelles",
+    "countryCallingCodes": [
+      "+248"
+    ]
   },
   {
     "alpha2": "SL",
     "alpha3": "SLE",
-    "name": "Sierra Leone"
+    "name": "Sierra Leone",
+    "countryCallingCodes": [
+      "+232"
+    ]
   },
   {
     "alpha2": "SG",
     "alpha3": "SGP",
-    "name": "Singapore"
+    "name": "Singapore",
+    "countryCallingCodes": [
+      "+65"
+    ]
   },
   {
     "alpha2": "SX",
     "alpha3": "SXM",
-    "name": "Sint Maarten"
+    "name": "Sint Maarten",
+    "countryCallingCodes": [
+      "+1 721"
+    ]
   },
   {
     "alpha2": "SK",
     "alpha3": "SVK",
-    "name": "Slovakia"
+    "name": "Slovakia",
+    "countryCallingCodes": [
+      "+421"
+    ]
   },
   {
     "alpha2": "SI",
     "alpha3": "SVN",
-    "name": "Slovenia"
+    "name": "Slovenia",
+    "countryCallingCodes": [
+      "+386"
+    ]
   },
   {
     "alpha2": "SB",
     "alpha3": "SLB",
-    "name": "Solomon Islands"
+    "name": "Solomon Islands",
+    "countryCallingCodes": [
+      "+677"
+    ]
   },
   {
     "alpha2": "SO",
     "alpha3": "SOM",
-    "name": "Somalia"
+    "name": "Somalia",
+    "countryCallingCodes": [
+      "+252"
+    ]
   },
   {
     "alpha2": "ZA",
     "alpha3": "ZAF",
-    "name": "South Africa"
+    "name": "South Africa",
+    "countryCallingCodes": [
+      "+27"
+    ]
   },
   {
     "alpha2": "GS",
     "alpha3": "SGS",
-    "name": "South Georgia And The South Sandwich Islands"
+    "name": "South Georgia And The South Sandwich Islands",
+    "countryCallingCodes": [
+      "+500"
+    ]
   },
   {
     "alpha2": "SS",
     "alpha3": "SSD",
-    "name": "South Sudan"
+    "name": "South Sudan",
+    "countryCallingCodes": [
+      "+211"
+    ]
   },
   {
     "alpha2": "ES",
     "alpha3": "ESP",
-    "name": "Spain"
+    "name": "Spain",
+    "countryCallingCodes": [
+      "+34"
+    ]
   },
   {
     "alpha2": "LK",
     "alpha3": "LKA",
-    "name": "Sri Lanka"
+    "name": "Sri Lanka",
+    "countryCallingCodes": [
+      "+94"
+    ]
   },
   {
     "alpha2": "SD",
     "alpha3": "SDN",
-    "name": "Sudan"
+    "name": "Sudan",
+    "countryCallingCodes": [
+      "+249"
+    ]
   },
   {
     "alpha2": "SR",
     "alpha3": "SUR",
-    "name": "Suriname"
+    "name": "Suriname",
+    "countryCallingCodes": [
+      "+597"
+    ]
   },
   {
     "alpha2": "SJ",
     "alpha3": "SJM",
-    "name": "Svalbard And Jan Mayen"
+    "name": "Svalbard And Jan Mayen",
+    "countryCallingCodes": [
+      "+47"
+    ]
   },
   {
     "alpha2": "SE",
     "alpha3": "SWE",
-    "name": "Sweden"
+    "name": "Sweden",
+    "countryCallingCodes": [
+      "+46"
+    ]
   },
   {
     "alpha2": "CH",
     "alpha3": "CHE",
-    "name": "Switzerland"
+    "name": "Switzerland",
+    "countryCallingCodes": [
+      "+41"
+    ]
   },
   {
     "alpha2": "SY",
     "alpha3": "SYR",
-    "name": "Syrian Arab Republic"
+    "name": "Syrian Arab Republic",
+    "countryCallingCodes": [
+      "+963"
+    ]
   },
   {
     "alpha2": "TW",
     "alpha3": "TWN",
-    "name": "Taiwan"
+    "name": "Taiwan",
+    "countryCallingCodes": [
+      "+886"
+    ]
   },
   {
     "alpha2": "TJ",
     "alpha3": "TJK",
-    "name": "Tajikistan"
+    "name": "Tajikistan",
+    "countryCallingCodes": [
+      "+992"
+    ]
   },
   {
     "alpha2": "TZ",
     "alpha3": "TZA",
-    "name": "Tanzania, United Republic Of"
+    "name": "Tanzania, United Republic Of",
+    "countryCallingCodes": [
+      "+255"
+    ]
   },
   {
     "alpha2": "TH",
     "alpha3": "THA",
-    "name": "Thailand"
+    "name": "Thailand",
+    "countryCallingCodes": [
+      "+66"
+    ]
   },
   {
     "alpha2": "TL",
     "alpha3": "TLS",
-    "name": "Timor-Leste, Democratic Republic of"
+    "name": "Timor-Leste, Democratic Republic of",
+    "countryCallingCodes": [
+      "+670"
+    ]
   },
   {
     "alpha2": "TG",
     "alpha3": "TGO",
-    "name": "Togo"
+    "name": "Togo",
+    "countryCallingCodes": [
+      "+228"
+    ]
   },
   {
     "alpha2": "TK",
     "alpha3": "TKL",
-    "name": "Tokelau"
+    "name": "Tokelau",
+    "countryCallingCodes": [
+      "+690"
+    ]
   },
   {
     "alpha2": "TO",
     "alpha3": "TON",
-    "name": "Tonga"
+    "name": "Tonga",
+    "countryCallingCodes": [
+      "+676"
+    ]
   },
   {
     "alpha2": "TT",
     "alpha3": "TTO",
-    "name": "Trinidad And Tobago"
+    "name": "Trinidad And Tobago",
+    "countryCallingCodes": [
+      "+1 868"
+    ]
   },
   {
     "alpha2": "TN",
     "alpha3": "TUN",
-    "name": "Tunisia"
+    "name": "Tunisia",
+    "countryCallingCodes": [
+      "+216"
+    ]
   },
   {
     "alpha2": "TR",
     "alpha3": "TUR",
-    "name": "Turkiye"
+    "name": "Turkiye",
+    "countryCallingCodes": [
+      "+90"
+    ]
   },
   {
     "alpha2": "TM",
     "alpha3": "TKM",
-    "name": "Turkmenistan"
+    "name": "Turkmenistan",
+    "countryCallingCodes": [
+      "+993"
+    ]
   },
   {
     "alpha2": "TC",
     "alpha3": "TCA",
-    "name": "Turks And Caicos Islands"
+    "name": "Turks And Caicos Islands",
+    "countryCallingCodes": [
+      "+1 649"
+    ]
   },
   {
     "alpha2": "TV",
     "alpha3": "TUV",
-    "name": "Tuvalu"
+    "name": "Tuvalu",
+    "countryCallingCodes": [
+      "+688"
+    ]
   },
   {
     "alpha2": "UG",
     "alpha3": "UGA",
-    "name": "Uganda"
+    "name": "Uganda",
+    "countryCallingCodes": [
+      "+256"
+    ]
   },
   {
     "alpha2": "UA",
     "alpha3": "UKR",
-    "name": "Ukraine"
+    "name": "Ukraine",
+    "countryCallingCodes": [
+      "+380"
+    ]
   },
   {
     "alpha2": "AE",
     "alpha3": "ARE",
-    "name": "United Arab Emirates"
+    "name": "United Arab Emirates",
+    "countryCallingCodes": [
+      "+971"
+    ]
   },
   {
     "alpha2": "GB",
     "alpha3": "GBR",
-    "name": "United Kingdom"
+    "name": "United Kingdom",
+    "countryCallingCodes": [
+      "+44"
+    ]
   },
   {
     "alpha2": "US",
     "alpha3": "USA",
-    "name": "United States"
+    "name": "United States",
+    "countryCallingCodes": [
+      "+1"
+    ]
   },
   {
     "alpha2": "UM",
     "alpha3": "UMI",
-    "name": "United States Minor Outlying Islands"
+    "name": "United States Minor Outlying Islands",
+    "countryCallingCodes": [
+      "+1"
+    ]
   },
   {
     "alpha2": "UY",
     "alpha3": "URY",
-    "name": "Uruguay"
+    "name": "Uruguay",
+    "countryCallingCodes": [
+      "+598"
+    ]
   },
   {
     "alpha2": "UZ",
     "alpha3": "UZB",
-    "name": "Uzbekistan"
+    "name": "Uzbekistan",
+    "countryCallingCodes": [
+      "+998"
+    ]
   },
   {
     "alpha2": "VU",
     "alpha3": "VUT",
-    "name": "Vanuatu"
+    "name": "Vanuatu",
+    "countryCallingCodes": [
+      "+678"
+    ]
   },
   {
     "alpha2": "VA",
     "alpha3": "VAT",
-    "name": "Vatican City State"
+    "name": "Vatican City State",
+    "countryCallingCodes": [
+      "+379",
+      "+39"
+    ]
   },
   {
     "alpha2": "VE",
     "alpha3": "VEN",
-    "name": "Venezuela, Bolivarian Republic Of"
+    "name": "Venezuela, Bolivarian Republic Of",
+    "countryCallingCodes": [
+      "+58"
+    ]
   },
   {
     "alpha2": "VN",
     "alpha3": "VNM",
-    "name": "VietNam"
+    "name": "VietNam",
+    "countryCallingCodes": [
+      "+84"
+    ]
   },
   {
     "alpha2": "VG",
     "alpha3": "VGB",
-    "name": "Virgin Islands (British)"
+    "name": "Virgin Islands (British)",
+    "countryCallingCodes": [
+      "+1 284"
+    ]
   },
   {
     "alpha2": "VI",
     "alpha3": "VIR",
-    "name": "Virgin Islands (US)"
+    "name": "Virgin Islands (US)",
+    "countryCallingCodes": [
+      "+1 340"
+    ]
   },
   {
     "alpha2": "WF",
     "alpha3": "WLF",
-    "name": "Wallis And Futuna"
+    "name": "Wallis And Futuna",
+    "countryCallingCodes": [
+      "+681"
+    ]
   },
   {
     "alpha2": "EH",
     "alpha3": "ESH",
-    "name": "Western Sahara"
+    "name": "Western Sahara",
+    "countryCallingCodes": [
+      "+212"
+    ]
   },
   {
     "alpha2": "YE",
     "alpha3": "YEM",
-    "name": "Yemen"
+    "name": "Yemen",
+    "countryCallingCodes": [
+      "+967"
+    ]
   },
   {
     "alpha2": "ZM",
     "alpha3": "ZMB",
-    "name": "Zambia"
+    "name": "Zambia",
+    "countryCallingCodes": [
+      "+260"
+    ]
   },
   {
     "alpha2": "ZW",
     "alpha3": "ZWE",
-    "name": "Zimbabwe"
+    "name": "Zimbabwe",
+    "countryCallingCodes": [
+      "+263"
+    ]
   }
 ]

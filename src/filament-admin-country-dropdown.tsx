@@ -145,7 +145,6 @@ function CountryDropdown({ inputId, value }: CountryDropdownProps) {
                     <CircleFlag countryCode={country.alpha2.toLowerCase()} height={20} />
                     <span>{country.name}</span>
                   </span>
-                  <span className="bsa-country-dropdown-code">{country.alpha2}</span>
                   <CheckIcon
                     aria-hidden="true"
                     className={country.alpha2 === selectedCountry?.alpha2 ? "is-selected" : ""}

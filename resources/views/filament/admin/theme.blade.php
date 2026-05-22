@@ -2600,6 +2600,64 @@
         padding: 22px 24px !important;
     }
 
+    .fi-resource-edit-record-page .bsa-user-saved-events {
+        display: grid;
+        gap: 12px;
+        color: var(--neo-dark-text);
+    }
+
+    .fi-resource-edit-record-page .bsa-user-saved-events > div {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .fi-resource-edit-record-page .bsa-user-saved-events > div strong {
+        color: var(--neo-blue);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        line-height: 1;
+    }
+
+    .fi-resource-edit-record-page .bsa-user-saved-events > div span,
+    .fi-resource-edit-record-page .bsa-user-saved-events li span,
+    .fi-resource-edit-record-page .bsa-user-saved-events em,
+    .fi-resource-edit-record-page .bsa-form-muted {
+        color: var(--neo-dark-muted);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .fi-resource-edit-record-page .bsa-user-saved-events ul {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .fi-resource-edit-record-page .bsa-user-saved-events li {
+        display: grid;
+        gap: 4px;
+        padding: 10px 12px;
+        border: 1px solid rgba(203, 213, 225, 0.16);
+        background: rgba(15, 23, 42, 0.42);
+    }
+
+    .fi-resource-edit-record-page .bsa-user-saved-events li strong {
+        color: var(--neo-dark-text);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        line-height: 1.1;
+        text-transform: uppercase;
+    }
+
     .fi-resource-create-record-page .fi-fo-field-wrp-label span,
     .fi-resource-edit-record-page .fi-fo-field-wrp-label span,
     .fi-resource-create-record-page .fi-fo-field-wrp-label sup,
@@ -2654,6 +2712,21 @@
     .fi-resource-create-record-page textarea::placeholder,
     .fi-resource-edit-record-page textarea::placeholder {
         color: rgba(203, 213, 225, 0.48) !important;
+    }
+
+    .fi-resource-create-record-page .fi-fo-select .fi-select-input,
+    .fi-resource-edit-record-page .fi-fo-select .fi-select-input {
+        appearance: none !important;
+        background-color: var(--neo-dark-elevated) !important;
+        background-image:
+            linear-gradient(45deg, transparent 50%, rgba(226, 232, 240, 0.82) 50%),
+            linear-gradient(135deg, rgba(226, 232, 240, 0.82) 50%, transparent 50%) !important;
+        background-position:
+            calc(100% - 18px) 17px,
+            calc(100% - 12px) 17px !important;
+        background-repeat: no-repeat !important;
+        background-size: 6px 6px, 6px 6px !important;
+        padding-right: 42px !important;
     }
 
     .fi-resource-create-record-page .fi-fo-file-upload .filepond--root,

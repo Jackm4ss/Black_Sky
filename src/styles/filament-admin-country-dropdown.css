@@ -30,7 +30,7 @@
   flex: 0 0 auto;
 }
 
-.bsa-events-field .bsa-country-dropdown-value,
+.bsa-country-dropdown-value,
 .bsa-country-dropdown-item-main {
   min-width: 0;
   display: inline-flex !important;
@@ -41,7 +41,7 @@
   text-transform: none !important;
 }
 
-.bsa-events-field .bsa-country-dropdown-value {
+.bsa-country-dropdown-value {
   flex: 1 1 auto;
   flex-direction: row !important;
   color: inherit !important;
@@ -50,7 +50,7 @@
   font-weight: 700 !important;
 }
 
-.bsa-events-field .bsa-country-dropdown-value span,
+.bsa-country-dropdown-value span,
 .bsa-country-dropdown-item-main span {
   display: inline-block !important;
   color: inherit !important;
@@ -62,18 +62,18 @@
   text-transform: none !important;
 }
 
-.bsa-events-field .bsa-country-dropdown-value-empty {
+.bsa-country-dropdown-value-empty {
   color: inherit;
 }
 
-.bsa-events-field .bsa-country-dropdown-value span:last-child,
+.bsa-country-dropdown-value span:last-child,
 .bsa-country-dropdown-item-main span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.bsa-events-field .bsa-country-dropdown-value img,
+.bsa-country-dropdown-value img,
 .bsa-country-dropdown-item-main img {
   width: 20px;
   height: 20px;

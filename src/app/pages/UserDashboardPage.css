@@ -103,26 +103,24 @@
   height: 88px;
   display: grid;
   place-items: center;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(14, 165, 233, 0.75);
+  background: #07111c;
+  box-shadow: 8px 8px 0 rgba(168, 85, 247, 0.42);
   overflow: hidden;
 }
 
 .member-profile-summary__avatar img {
-  position: absolute;
-  inset: 10px;
-  width: calc(100% - 20px);
-  height: calc(100% - 20px);
-  object-fit: contain;
-  opacity: 0.22;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .member-profile-summary__avatar strong {
-  position: relative;
   color: #fff;
   font-family: "Barlow Condensed", sans-serif;
   font-size: 2.15rem;
   font-weight: 900;
+  text-transform: uppercase;
 }
 
 .member-profile-summary h2,
@@ -706,6 +704,125 @@
   font-weight: 700;
 }
 
+.member-field .phone-input {
+  width: 100%;
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.member-field .phone-input[data-disabled="true"] {
+  opacity: 0.62;
+}
+
+.member-field .phone-input__country {
+  width: 112px;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 900;
+  padding: 0 12px;
+}
+
+.phone-input__flag {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.member-field .phone-input input {
+  min-width: 0;
+  min-height: 50px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: 0;
+  padding: 0 14px;
+}
+
+.member-field .phone-input input::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.phone-input__content {
+  width: min(360px, calc(100vw - 32px));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0;
+  background: #07111c;
+  color: #fff;
+  padding: 0;
+}
+
+.phone-input__command {
+  background: transparent;
+}
+
+.phone-input__list {
+  max-height: 280px;
+}
+
+.phone-input__empty {
+  color: rgba(255, 255, 255, 0.58);
+  font-family: "Inter", sans-serif;
+  font-size: 0.86rem;
+  padding: 16px;
+}
+
+.phone-input__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 18px;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.86);
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  padding: 10px 12px;
+}
+
+.phone-input__item[data-selected="true"] {
+  background: rgba(14, 165, 233, 0.16);
+  color: #fff;
+}
+
+.phone-input__item-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-input__item-main span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-input__calling-code {
+  color: rgba(125, 211, 252, 0.76);
+  font-weight: 800;
+}
+
+.phone-input__item > svg {
+  opacity: 0;
+}
+
+.phone-input__item > svg.is-selected {
+  opacity: 1;
+}
+
 .member-field select {
   appearance: none;
   background-image:
@@ -722,6 +839,12 @@
 .member-field select option {
   background: #07111c;
   color: #fff;
+}
+
+.member-birthdate-selects {
+  display: grid;
+  grid-template-columns: minmax(78px, 0.75fr) minmax(128px, 1.35fr) minmax(96px, 0.9fr);
+  gap: 10px;
 }
 
 .member-field input[readonly] {
@@ -928,6 +1051,10 @@
   .member-event-grid,
   .member-form-grid,
   .member-wishlist-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .member-birthdate-selects {
     grid-template-columns: 1fr;
   }
 

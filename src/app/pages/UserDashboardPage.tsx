@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Bell,
-  CalendarDays,
   Camera,
   ChevronRight,
   Heart,
@@ -27,6 +26,7 @@ import { Navbar } from "../components/Navbar";
 import { RegistrationCountryDropdown } from "../components/RegistrationCountryDropdown";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { PhoneInput } from "../components/ui/phone-input";
 import type { MemberNotification, MemberTicket } from "../user-dashboard/user-dashboard-api";
 import {
   useMemberDashboard,
@@ -34,12 +34,10 @@ import {
   useUpdateMemberAccount,
   useUpdateMemberPassword,
 } from "../user-dashboard/user-dashboard-queries";
-import logo from "../../assets/LOGO.png";
 import "./UserDashboardPage.css";
 
 const accountSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters."),
-  lastName: z.string().max(120, "Last name is too long.").optional(),
+  fullName: z.string().min(2, "Full name must be at least 2 characters.").max(180, "Full name is too long."),
   email: z.string().email("Enter a valid email address."),
   phone: z.string().max(20, "Phone number is too long.").optional(),
   countryCode: z.string().max(2).optional(),
@@ -68,8 +66,6 @@ type RemoveAccountFormValues = z.infer<typeof removeAccountSchema>;
 type DashboardView =
   | "overview"
   | "account"
-  | "tickets"
-  | "purchases"
   | "saved-events"
   | "notifications"
   | "password"
@@ -84,10 +80,39 @@ type MenuItem = {
   Icon: typeof UserRound;
 };
 
+type BirthDateParts = {
+  day: string;
+  month: string;
+  year: string;
+};
+
+const BIRTH_YEAR_START = 1900;
+const now = new Date();
+const currentYear = now.getFullYear();
+const currentMonth = now.getMonth() + 1;
+const currentDay = now.getDate();
+
+const birthYearOptions = Array.from({ length: currentYear - BIRTH_YEAR_START + 1 }, (_, index) =>
+  String(currentYear - index),
+);
+
+const birthMonthOptions = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+];
+
 const viewFromPath = (pathname: string): DashboardView => {
   if (pathname.endsWith("/account")) return "account";
-  if (pathname.endsWith("/tickets")) return "tickets";
-  if (pathname.endsWith("/purchases")) return "purchases";
   if (pathname.endsWith("/saved-events")) return "saved-events";
   if (pathname.endsWith("/notifications")) return "notifications";
   if (pathname.endsWith("/password") || pathname.endsWith("/security")) return "password";
@@ -101,22 +126,12 @@ const viewCopy: Record<DashboardView, { eyebrow: string; title: string; descript
   overview: {
     eyebrow: "Member",
     title: "Dashboard",
-    description: "Manage your Black Sky account, tickets, saved events, and account security.",
+    description: "Manage your Black Sky account, saved events, notifications, and account security.",
   },
   account: {
     eyebrow: "Account",
     title: "Account details",
     description: "Keep your contact details ready for ticket sync, event alerts, and support.",
-  },
-  tickets: {
-    eyebrow: "Purchases",
-    title: "My Tickets",
-    description: "View purchased tickets matched to your member email.",
-  },
-  purchases: {
-    eyebrow: "Purchases",
-    title: "Purchases",
-    description: "Review your current and past Black Sky purchase records.",
   },
   "saved-events": {
     eyebrow: "Saved events",
@@ -180,25 +195,6 @@ const menuGroups: Array<{ title: string; items: MenuItem[] }> = [
     ],
   },
   {
-    title: "Purchases",
-    items: [
-      {
-        view: "tickets",
-        href: "/dashboard/tickets",
-        label: "Tickets",
-        description: "View all purchased tickets",
-        Icon: Ticket,
-      },
-      {
-        view: "purchases",
-        href: "/dashboard/purchases",
-        label: "Purchases",
-        description: "View your current and past purchases record",
-        Icon: CalendarDays,
-      },
-    ],
-  },
-  {
     title: "Security",
     items: [
       {
@@ -229,6 +225,70 @@ function formatDate(value?: string | null) {
   }).format(new Date(value));
 }
 
+function emptyBirthDateParts(): BirthDateParts {
+  return {
+    day: "",
+    month: "",
+    year: "",
+  };
+}
+
+function parseBirthDate(value?: string | null): BirthDateParts {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? "");
+
+  if (!match) return emptyBirthDateParts();
+
+  return {
+    year: match[1],
+    month: match[2],
+    day: match[3],
+  };
+}
+
+function daysInMonth(year: string, month: string) {
+  const numericYear = Number(year || currentYear);
+  const numericMonth = Number(month || 1);
+
+  return new Date(numericYear, numericMonth, 0).getDate();
+}
+
+function allowedBirthDayCount(year: string, month: string) {
+  if (!year || !month) return 31;
+
+  const maxDays = daysInMonth(year, month);
+
+  if (Number(year) === currentYear && Number(month) === currentMonth) {
+    return Math.min(maxDays, currentDay);
+  }
+
+  return maxDays;
+}
+
+function birthDateFromParts(parts: BirthDateParts) {
+  if (!parts.year || !parts.month || !parts.day) return "";
+
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function normalizeBirthDateParts(parts: BirthDateParts): BirthDateParts {
+  const next = { ...parts };
+
+  if (Number(next.year) === currentYear && Number(next.month) > currentMonth) {
+    next.month = "";
+    next.day = "";
+  }
+
+  if (next.year && next.month && next.day) {
+    const maxDay = allowedBirthDayCount(next.year, next.month);
+
+    if (Number(next.day) > maxDay) {
+      next.day = String(maxDay).padStart(2, "0");
+    }
+  }
+
+  return next;
+}
+
 function userInitials(name?: string | null, email?: string | null) {
   const source = name?.trim() || email?.split("@").at(0) || "BS";
   const parts = source.split(/\s+/).filter(Boolean);
@@ -237,19 +297,6 @@ function userInitials(name?: string | null, email?: string | null) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
-}
-
-function splitMemberName(name?: string | null) {
-  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
-
-  return {
-    firstName: parts.shift() ?? "",
-    lastName: parts.join(" "),
-  };
-}
-
-function composeMemberName(values: Pick<AccountFormValues, "firstName" | "lastName">) {
-  return [values.firstName, values.lastName].map((value) => value?.trim()).filter(Boolean).join(" ");
 }
 
 function normalizeGender(value?: string | null): AccountFormValues["gender"] {
@@ -299,11 +346,13 @@ function DashboardMenu({ activeView }: { activeView: DashboardView }) {
 function ProfileSummary({
   name,
   email,
+  avatar,
   onSignOut,
   isSigningOut,
 }: {
   name?: string | null;
   email?: string | null;
+  avatar?: string | null;
   onSignOut: () => void;
   isSigningOut: boolean;
 }) {
@@ -312,8 +361,11 @@ function ProfileSummary({
       <span>Account</span>
       <div className="member-profile-summary__body">
         <div className="member-profile-summary__avatar">
-          <img src={logo} alt="" aria-hidden="true" />
-          <strong>{userInitials(name, email)}</strong>
+          {avatar ? (
+            <img src={avatar} alt="" />
+          ) : (
+            <strong>{userInitials(name, email)}</strong>
+          )}
         </div>
         <div>
           <h2>{name ?? "Black Sky Member"}</h2>
@@ -334,7 +386,7 @@ function EmptyState({
   description,
   action,
 }: {
-  icon: typeof Ticket;
+  icon: typeof UserRound;
   title: string;
   description: string;
   action?: { label: string; href: string };
@@ -352,6 +404,97 @@ function EmptyState({
           <ArrowRight aria-hidden="true" />
         </Link>
       ) : null}
+    </div>
+  );
+}
+
+function DateOfBirthDropdown({
+  value,
+  onChange,
+  onBlur,
+}: {
+  value?: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+}) {
+  const [parts, setParts] = useState<BirthDateParts>(() => parseBirthDate(value));
+  const dayOptions = useMemo(
+    () =>
+      Array.from({ length: allowedBirthDayCount(parts.year, parts.month) }, (_, index) =>
+        String(index + 1).padStart(2, "0"),
+      ),
+    [parts.month, parts.year],
+  );
+
+  useEffect(() => {
+    setParts(parseBirthDate(value));
+  }, [value]);
+
+  const setPart = (key: keyof BirthDateParts, nextValue: string) => {
+    setParts((current) => {
+      const next = normalizeBirthDateParts({
+        ...current,
+        [key]: nextValue,
+      });
+
+      onChange(birthDateFromParts(next));
+
+      return next;
+    });
+  };
+
+  return (
+    <div
+      className="member-birthdate-selects"
+      role="group"
+      aria-labelledby="member-date-of-birth-label"
+    >
+      <select
+        id="member-birth-day"
+        aria-label="Birth day"
+        value={parts.day}
+        onBlur={onBlur}
+        onChange={(event) => setPart("day", event.target.value)}
+      >
+        <option value="">Day</option>
+        {dayOptions.map((day) => (
+          <option key={day} value={day}>
+            {day}
+          </option>
+        ))}
+      </select>
+      <select
+        id="member-birth-month"
+        aria-label="Birth month"
+        value={parts.month}
+        onBlur={onBlur}
+        onChange={(event) => setPart("month", event.target.value)}
+      >
+        <option value="">Month</option>
+        {birthMonthOptions.map((month) => (
+          <option
+            key={month.value}
+            value={month.value}
+            disabled={Number(parts.year) === currentYear && Number(month.value) > currentMonth}
+          >
+            {month.label}
+          </option>
+        ))}
+      </select>
+      <select
+        id="member-birth-year"
+        aria-label="Birth year"
+        value={parts.year}
+        onBlur={onBlur}
+        onChange={(event) => setPart("year", event.target.value)}
+      >
+        <option value="">Year</option>
+        {birthYearOptions.map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -429,7 +572,6 @@ export function UserDashboardPage() {
   const updateAccountMutation = useUpdateMemberAccount();
   const updatePasswordMutation = useUpdateMemberPassword();
   const deleteAccountMutation = useDeleteMemberAccount();
-  const [ticketSearch, setTicketSearch] = useState("");
   const [accountMessage, setAccountMessage] = useState("");
   const [accountError, setAccountError] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
@@ -445,8 +587,7 @@ export function UserDashboardPage() {
   const accountForm = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       email: "",
       phone: "",
       countryCode: "",
@@ -469,34 +610,7 @@ export function UserDashboardPage() {
     },
   });
 
-  const filteredTickets = useMemo(() => {
-    const query = ticketSearch.trim().toLowerCase();
-    const tickets = data?.tickets ?? [];
-
-    if (!query) {
-      return tickets;
-    }
-
-    return tickets.filter((ticket) =>
-      [
-        ticket.event_title,
-        ticket.event?.title,
-        ticket.ticket_type,
-        ticket.status,
-        ticket.vendor,
-        ticket.external_order_id,
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query)),
-    );
-  }, [data?.tickets, ticketSearch]);
   const today = new Date().toISOString().slice(0, 10);
-  const upcomingTickets = filteredTickets.filter(
-    (ticket) => ticket.event?.start_date && ticket.event.start_date >= today,
-  );
-  const pastTickets = filteredTickets.filter(
-    (ticket) => !ticket.event?.start_date || ticket.event.start_date < today,
-  );
   const upcomingSavedCount = useMemo(
     () =>
       (data?.saved_events ?? []).filter(
@@ -508,11 +622,8 @@ export function UserDashboardPage() {
   useEffect(() => {
     if (!user) return;
 
-    const name = splitMemberName(user.name);
-
     accountForm.reset({
-      firstName: name.firstName,
-      lastName: name.lastName,
+      fullName: user.name ?? "",
       email: user.email,
       phone: user.phone ?? "",
       countryCode: user.countryCode ?? "",
@@ -556,7 +667,7 @@ export function UserDashboardPage() {
 
     try {
       await updateAccountMutation.mutateAsync({
-        name: composeMemberName(values),
+        name: values.fullName.trim(),
         email: values.email,
         phone: values.phone ?? "",
         country_code: values.countryCode ?? "",
@@ -631,6 +742,7 @@ export function UserDashboardPage() {
                 <ProfileSummary
                   name={user?.name}
                   email={user?.email}
+                  avatar={user?.avatar}
                   isSigningOut={logoutMutation.isPending}
                   onSignOut={signOut}
                 />
@@ -687,30 +799,28 @@ export function UserDashboardPage() {
                       </div>
                     </section>
                     <div className="member-form-grid">
-                      <div className="member-field">
-                        <Label htmlFor="member-first-name">
+                      <div className="member-field member-field--full">
+                        <Label htmlFor="member-full-name">
                           <span>*</span>
-                          First name
+                          Full name
                         </Label>
-                        <Input id="member-first-name" {...accountForm.register("firstName")} />
-                        {accountForm.formState.errors.firstName ? (
-                          <p>{accountForm.formState.errors.firstName.message}</p>
+                        <Input id="member-full-name" {...accountForm.register("fullName")} />
+                        {accountForm.formState.errors.fullName ? (
+                          <p>{accountForm.formState.errors.fullName.message}</p>
                         ) : null}
                       </div>
                       <div className="member-field">
-                        <Label htmlFor="member-last-name">Last name</Label>
-                        <Input id="member-last-name" {...accountForm.register("lastName")} />
-                        {accountForm.formState.errors.lastName ? (
-                          <p>{accountForm.formState.errors.lastName.message}</p>
-                        ) : null}
-                      </div>
-                      <div className="member-field">
-                        <Label htmlFor="member-date-of-birth">Date of birth</Label>
-                        <Input
-                          id="member-date-of-birth"
-                          type="date"
-                          max={new Date().toISOString().slice(0, 10)}
-                          {...accountForm.register("dateOfBirth")}
+                        <Label id="member-date-of-birth-label">Date of birth</Label>
+                        <Controller
+                          control={accountForm.control}
+                          name="dateOfBirth"
+                          render={({ field }) => (
+                            <DateOfBirthDropdown
+                              value={field.value ?? ""}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                            />
+                          )}
                         />
                       </div>
                       <div className="member-field">
@@ -737,10 +847,6 @@ export function UserDashboardPage() {
                         ) : null}
                       </div>
                       <div className="member-field">
-                        <Label htmlFor="member-phone">Mobile number</Label>
-                        <Input id="member-phone" type="tel" {...accountForm.register("phone")} />
-                      </div>
-                      <div className="member-field">
                         <Label htmlFor="member-country">Country</Label>
                         <Controller
                           control={accountForm.control}
@@ -750,6 +856,23 @@ export function UserDashboardPage() {
                               id="member-country"
                               value={field.value ?? ""}
                               onChange={field.onChange}
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="member-field">
+                        <Label htmlFor="member-phone">Mobile number</Label>
+                        <Controller
+                          control={accountForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <PhoneInput
+                              id="member-phone"
+                              value={field.value ?? ""}
+                              defaultCountry={accountForm.watch("countryCode") || "MY"}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              placeholder="Enter phone number"
                             />
                           )}
                         />
@@ -769,10 +892,8 @@ export function UserDashboardPage() {
                         type="button"
                         className="member-secondary-button"
                         onClick={() => {
-                          const name = splitMemberName(user?.name);
                           accountForm.reset({
-                            firstName: name.firstName,
-                            lastName: name.lastName,
+                            fullName: user?.name ?? "",
                             email: user?.email ?? "",
                             phone: user?.phone ?? "",
                             countryCode: user?.countryCode ?? "",
@@ -789,41 +910,6 @@ export function UserDashboardPage() {
                       </button>
                     </div>
                   </form>
-                ) : null}
-
-                {activeView === "tickets" || activeView === "purchases" ? (
-                  <div className="member-ticket-view">
-                    <label className="member-ticket-search">
-                      <span className="sr-only">Search tickets</span>
-                      <input
-                        type="search"
-                        value={ticketSearch}
-                        onChange={(event) => setTicketSearch(event.target.value)}
-                        placeholder="Search by artist or event"
-                      />
-                    </label>
-                    {data.tickets.length ? (
-                      <>
-                        <TicketGroup
-                          title="Upcoming"
-                          tickets={upcomingTickets}
-                          empty="No upcoming tickets found"
-                        />
-                        <TicketGroup
-                          title="Past Events"
-                          tickets={pastTickets}
-                          empty="No past tickets found"
-                        />
-                      </>
-                    ) : (
-                      <EmptyState
-                        icon={Ticket}
-                        title="No ticket history yet"
-                        description="Once external ticket vendor sync is connected, matched purchases will appear here automatically."
-                        action={{ label: "Explore events", href: "/discover" }}
-                      />
-                    )}
-                  </div>
                 ) : null}
 
                 {activeView === "saved-events" ? (
@@ -890,18 +976,6 @@ export function UserDashboardPage() {
                         Email support
                         <ArrowRight aria-hidden="true" />
                       </a>
-                    </article>
-                    <article>
-                      <Ticket aria-hidden="true" />
-                      <span>Ticket sync</span>
-                      <h3>Missing ticket history?</h3>
-                      <p>
-                        Ticket records appear after external vendor sync matches the purchase email with this member account.
-                      </p>
-                      <Link to="/dashboard/tickets">
-                        Check tickets
-                        <ArrowRight aria-hidden="true" />
-                      </Link>
                     </article>
                   </div>
                 ) : null}

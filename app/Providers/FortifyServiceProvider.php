@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
 
@@ -44,9 +45,19 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            return Hash::check((string) $request->input('password'), $user->password)
-                ? $user
-                : null;
+            if (! Hash::check((string) $request->input('password'), $user->password)) {
+                return null;
+            }
+
+            $user->loadMissing('roles');
+
+            if ($user->hasRole('admin') || ! $user->hasRole('user')) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => __('auth.failed'),
+                ]);
+            }
+
+            return $user;
         });
 
         RateLimiter::for('login', function (Request $request) {

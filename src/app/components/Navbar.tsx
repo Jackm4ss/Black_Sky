@@ -1,7 +1,14 @@
 import { useState, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { LogIn, Menu, UserRound, X } from "lucide-react";
-import { useCurrentUser } from "../auth/auth-queries";
+import { ChevronDown, LayoutDashboard, LogIn, LogOut, Menu, UserRound, X } from "lucide-react";
+import { useCurrentUser, useLogoutMutation } from "../auth/auth-queries";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import logo from "../../assets/LOGO.png";
 
 const navLinks = [
@@ -15,11 +22,18 @@ const navLinks = [
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: user } = useCurrentUser();
+  const logoutMutation = useLogoutMutation();
   const isAdmin = user?.roles?.includes("admin") && !user.roles.includes("user");
-  const AccountIcon = user ? UserRound : LogIn;
+  const accountDisplayName = user?.name?.trim() || user?.email || "Account";
   const accountHref = user ? (isAdmin ? "/admin" : "/dashboard") : "/login";
-  const accountLabel = user ? (isAdmin ? "ADMIN" : "DASHBOARD") : "LOGIN";
+  const accountLabel = user ? accountDisplayName : "LOGIN";
   const showTicketCta = !user;
+
+  const handleLogout = async () => {
+    setMobileOpen(false);
+    await logoutMutation.mutateAsync();
+    window.location.assign("/login");
+  };
 
   const handleLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
     setMobileOpen(false);
@@ -128,27 +142,80 @@ export function Navbar() {
 
           {/* CTA + Mobile */}
           <div className="flex items-center gap-4">
-            <a
-              href={accountHref}
-              onClick={() => setMobileOpen(false)}
-              className="hidden lg:flex items-center gap-2 px-4 py-3 transition-all duration-300 hover:opacity-90"
-              style={{
-                background: "#FFFFFF",
-                border: "none",
-                color: "#030213",
-                cursor: "pointer",
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: "11px",
-                fontWeight: 700,
-                letterSpacing: "0.25em",
-                lineHeight: 1,
-                textDecoration: "none",
-                textTransform: "uppercase",
-              }}
-            >
-              <AccountIcon size={14} strokeWidth={2.6} aria-hidden="true" />
-              {accountLabel}
-            </a>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="hidden lg:flex items-center gap-2 px-4 py-3 transition-all duration-300 hover:opacity-90"
+                    style={{
+                      background: "#FFFFFF",
+                      border: "none",
+                      color: "#030213",
+                      cursor: "pointer",
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: "13px",
+                      fontWeight: 800,
+                      letterSpacing: "0",
+                      lineHeight: 1,
+                      maxWidth: "240px",
+                      textDecoration: "none",
+                      textTransform: "none",
+                    }}
+                  >
+                    <UserRound size={14} strokeWidth={2.6} aria-hidden="true" />
+                    <span className="truncate">{accountDisplayName}</span>
+                    <ChevronDown size={13} strokeWidth={2.8} aria-hidden="true" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={10}
+                  className="min-w-[190px] rounded-none border-white/15 bg-[#050b14] p-2 text-white shadow-2xl"
+                >
+                  <DropdownMenuItem asChild className="rounded-none px-3 py-2.5 !text-[12px] font-semibold normal-case tracking-normal focus:bg-sky-500/15 focus:text-white">
+                    <a href={accountHref} onClick={() => setMobileOpen(false)}>
+                      <LayoutDashboard size={14} aria-hidden="true" />
+                      Dashboard
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem
+                    className="rounded-none px-3 py-2.5 !text-[12px] font-semibold normal-case tracking-normal focus:bg-rose-500/15 focus:text-white"
+                    disabled={logoutMutation.isPending}
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      void handleLogout();
+                    }}
+                  >
+                    <LogOut size={14} aria-hidden="true" />
+                    {logoutMutation.isPending ? "Logging out" : "Logout"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <a
+                href={accountHref}
+                onClick={() => setMobileOpen(false)}
+                className="hidden lg:flex items-center gap-2 px-4 py-3 transition-all duration-300 hover:opacity-90"
+                style={{
+                  background: "#FFFFFF",
+                  border: "none",
+                  color: "#030213",
+                  cursor: "pointer",
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.25em",
+                  lineHeight: 1,
+                  textDecoration: "none",
+                  textTransform: "uppercase",
+                }}
+              >
+                <LogIn size={14} strokeWidth={2.6} aria-hidden="true" />
+                {accountLabel}
+              </a>
+            )}
             {showTicketCta ? (
               <a
                 href="/register"
@@ -253,21 +320,56 @@ export function Navbar() {
                   justifyContent: "center",
                   gap: "10px",
                   background: "#FFFFFF",
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontFamily: user ? "'Inter', sans-serif" : "'Barlow Condensed', sans-serif",
                   fontWeight: 700,
-                  fontSize: "12px",
-                  letterSpacing: "0.25em",
+                  fontSize: user ? "14px" : "12px",
+                  letterSpacing: user ? "0" : "0.25em",
                   color: "#030213",
                   border: "none",
                   cursor: "pointer",
                   textAlign: "center",
                   textDecoration: "none",
-                  textTransform: "uppercase",
+                  textTransform: user ? "none" : "uppercase",
                 }}
               >
-                <AccountIcon size={16} strokeWidth={2.6} aria-hidden="true" />
+                {user ? (
+                  <UserRound size={16} strokeWidth={2.6} aria-hidden="true" />
+                ) : (
+                  <LogIn size={16} strokeWidth={2.6} aria-hidden="true" />
+                )}
                 {accountLabel}
               </a>
+              {user ? (
+                <button
+                  type="button"
+                  disabled={logoutMutation.isPending}
+                  onClick={() => {
+                    void handleLogout();
+                  }}
+                  className="w-full py-4 mb-3"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    background: "rgba(255,255,255,0.08)",
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "12px",
+                    letterSpacing: "0.25em",
+                    color: "#fff",
+                    border: "1px solid rgba(255,255,255,0.16)",
+                    cursor: logoutMutation.isPending ? "not-allowed" : "pointer",
+                    opacity: logoutMutation.isPending ? 0.72 : 1,
+                    textAlign: "center",
+                    textDecoration: "none",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <LogOut size={16} strokeWidth={2.6} aria-hidden="true" />
+                  {logoutMutation.isPending ? "Logging out" : "Logout"}
+                </button>
+              ) : null}
               {showTicketCta ? (
                 <a
                   href="/register"

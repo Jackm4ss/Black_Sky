@@ -85,6 +85,12 @@ export function LoginPage({ variant = "user" }: LoginPageProps) {
         return;
       }
 
+      if (!isAdminLogin && user.roles?.includes("admin")) {
+        await logoutMutation.mutateAsync();
+        setSubmitError("These credentials do not match our records.");
+        return;
+      }
+
       navigate(isAdminLogin ? "/admin" : memberRedirect);
     } catch (error) {
       setSubmitError(getAuthErrorMessage(error, "Login gagal."));

@@ -165,22 +165,6 @@ export default function App() {
             }
           />
           <Route
-            path="/dashboard/tickets"
-            element={
-              <RequireAuth allowedRoles={["user"]}>
-                <UserDashboardPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dashboard/purchases"
-            element={
-              <RequireAuth allowedRoles={["user"]}>
-                <UserDashboardPage />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="/dashboard/saved-events"
             element={
               <RequireAuth allowedRoles={["user"]}>

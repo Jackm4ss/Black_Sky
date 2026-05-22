@@ -62,6 +62,29 @@ class AuthApiTest extends TestCase
             ->assertJsonPath('data.roles.0', 'user');
     }
 
+    public function test_admin_cannot_login_through_member_login_api(): void
+    {
+        Role::findOrCreate('admin');
+
+        $admin = User::factory()->create([
+            'email' => 'admin@blacksky.test',
+            'password' => Hash::make('Password123!'),
+            'is_active' => true,
+        ]);
+
+        $admin->assignRole('admin');
+
+        $this->postJson('/api/login', [
+            'email' => 'admin@blacksky.test',
+            'password' => 'Password123!',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email')
+            ->assertJsonPath('errors.email.0', 'These credentials do not match our records.');
+
+        $this->assertGuest();
+    }
+
     public function test_inactive_user_cannot_login(): void
     {
         User::factory()->create([

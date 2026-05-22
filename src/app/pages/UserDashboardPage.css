@@ -145,6 +145,7 @@
 
 .member-profile-summary button,
 .member-account-form button,
+.member-account-form .member-avatar-upload__button,
 .member-account-form a.member-secondary-button,
 .member-empty a,
 .member-security-grid a,
@@ -169,6 +170,7 @@
 
 .member-profile-summary button:hover,
 .member-account-form button:hover,
+.member-account-form .member-avatar-upload__button:hover,
 .member-account-form a.member-secondary-button:hover,
 .member-empty a:hover,
 .member-security-grid a:hover,
@@ -178,9 +180,14 @@
 
 .member-profile-summary button:disabled,
 .member-account-form button:disabled,
+.member-account-form .member-avatar-upload__button[aria-disabled="true"],
 .member-event-card__meta button:disabled {
   cursor: wait;
   opacity: 0.6;
+}
+
+.member-account-form .member-avatar-upload__button[aria-disabled="true"] {
+  pointer-events: none;
 }
 
 .member-profile-summary svg,
@@ -769,6 +776,21 @@
 
 .phone-input__command {
   background: transparent;
+  color: #fff;
+}
+
+.phone-input__command [data-slot="command-input-wrapper"] {
+  height: 44px;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.phone-input__command [data-slot="command-input"] {
+  color: #fff;
+}
+
+.phone-input__command [data-slot="command-input"]::placeholder {
+  color: rgba(255, 255, 255, 0.44);
 }
 
 .phone-input__list {

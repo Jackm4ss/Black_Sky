@@ -23,6 +23,14 @@ class UserDashboardController extends Controller
 {
     private const AVATAR_IMAGE_MAX_EDGE = 640;
     private const AVATAR_IMAGE_QUALITY = 84;
+    private const AVATAR_IMAGE_MAX_PIXELS = 50000000;
+    private const AVATAR_UPLOAD_MAX_KILOBYTES = 204800;
+    private const AVATAR_ALLOWED_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+    ];
 
     public function show(Request $request): JsonResponse
     {
@@ -108,7 +116,13 @@ class UserDashboardController extends Controller
                 'non_binary',
                 'prefer_not_to_say',
             ])],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:51200'],
+            'avatar' => [
+                'nullable',
+                'file',
+                'image',
+                'mimetypes:' . implode(',', self::AVATAR_ALLOWED_MIME_TYPES),
+                'max:' . self::AVATAR_UPLOAD_MAX_KILOBYTES,
+            ],
             'email' => [
                 'required',
                 'email',
@@ -239,7 +253,27 @@ class UserDashboardController extends Controller
         @ini_set('memory_limit', '512M');
         @set_time_limit(90);
 
+        if (! $upload->isValid()) {
+            throw ValidationException::withMessages([
+                'avatar' => 'The profile image upload did not complete.',
+            ]);
+        }
+
         $sourcePath = $upload->getRealPath();
+        $reportedMimeType = (string) $upload->getMimeType();
+
+        if (! is_string($sourcePath) || ! is_file($sourcePath)) {
+            throw ValidationException::withMessages([
+                'avatar' => 'The profile image could not be read.',
+            ]);
+        }
+
+        if (! in_array($reportedMimeType, self::AVATAR_ALLOWED_MIME_TYPES, true)) {
+            throw ValidationException::withMessages([
+                'avatar' => 'Upload a JPG, PNG, WEBP, or GIF profile image.',
+            ]);
+        }
+
         $imageInfo = @getimagesize($sourcePath);
 
         if ($imageInfo === false) {
@@ -249,6 +283,20 @@ class UserDashboardController extends Controller
         }
 
         [$sourceWidth, $sourceHeight, $imageType] = $imageInfo;
+        $detectedMimeType = (string) ($imageInfo['mime'] ?? '');
+        $sourcePixels = (int) $sourceWidth * (int) $sourceHeight;
+
+        if (
+            $sourceWidth < 1 ||
+            $sourceHeight < 1 ||
+            $sourcePixels > self::AVATAR_IMAGE_MAX_PIXELS ||
+            ! in_array($detectedMimeType, self::AVATAR_ALLOWED_MIME_TYPES, true)
+        ) {
+            throw ValidationException::withMessages([
+                'avatar' => 'Upload a JPG, PNG, WEBP, or GIF profile image under the supported resolution limit.',
+            ]);
+        }
+
         $source = match ($imageType) {
             IMAGETYPE_JPEG => @imagecreatefromjpeg($sourcePath),
             IMAGETYPE_PNG => @imagecreatefrompng($sourcePath),
@@ -273,10 +321,10 @@ class UserDashboardController extends Controller
         imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, imagecolorallocatealpha($target, 0, 0, 0, 127));
         imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
 
-        $safeName = Str::slug($user->name) ?: 'member';
-        $relativePath = 'profile-avatars/' . $user->id . '-' . $safeName . '-' . Str::uuid() . '.webp';
+        $relativeDirectory = 'profile-avatars/' . $user->id;
+        $relativePath = $relativeDirectory . '/' . Str::uuid() . '.webp';
 
-        Storage::disk('public')->makeDirectory('profile-avatars');
+        Storage::disk('public')->makeDirectory($relativeDirectory);
 
         $stored = @imagewebp($target, Storage::disk('public')->path($relativePath), self::AVATAR_IMAGE_QUALITY);
 
@@ -304,7 +352,17 @@ class UserDashboardController extends Controller
             return;
         }
 
-        Storage::disk('public')->delete(Str::after($path, '/storage/'));
+        $relativePath = str_replace('\\', '/', Str::after($path, '/storage/'));
+
+        if (
+            ! Str::startsWith($relativePath, 'profile-avatars/') ||
+            str_contains($relativePath, '..') ||
+            str_contains($relativePath, "\0")
+        ) {
+            return;
+        }
+
+        Storage::disk('public')->delete($relativePath);
     }
 
     /**

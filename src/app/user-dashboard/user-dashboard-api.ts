@@ -1,5 +1,5 @@
 import { http } from "../lib/http";
-import type { AuthUser } from "../auth/auth-api";
+import { toAuthUser, type AuthUser } from "../auth/auth-api";
 import type { PublicEvent } from "../events/events-api";
 
 export type MemberTicket = {
@@ -72,7 +72,10 @@ export async function getMemberDashboard() {
     "/api/v1/me/dashboard",
   );
 
-  return data.data;
+  return {
+    ...data.data,
+    user: toAuthUser(data.data.user),
+  };
 }
 
 export async function updateMemberAccount(payload: UpdateAccountPayload) {
@@ -95,7 +98,10 @@ export async function updateMemberAccount(payload: UpdateAccountPayload) {
     formData,
   );
 
-  return data;
+  return {
+    ...data,
+    data: toAuthUser(data.data),
+  };
 }
 
 export async function updateMemberPassword(payload: UpdatePasswordPayload) {

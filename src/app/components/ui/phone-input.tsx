@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo, useState } from "react";
+import { forwardRef, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, InputHTMLAttributes } from "react";
 import { Check, ChevronsUpDown, Globe2 } from "lucide-react";
 import { countries } from "country-data-list";
@@ -43,6 +43,11 @@ const phoneCountries = countries.all
     first.name.localeCompare(second.name),
   );
 
+const phoneCountriesByCallingCodeLength = [...phoneCountries].sort(
+  (first: PhoneCountry, second: PhoneCountry) =>
+    countryCallingDigits(second).length - countryCallingDigits(first).length,
+);
+
 function findCountry(value?: string) {
   const normalized = value?.trim().toUpperCase();
 
@@ -55,39 +60,96 @@ function findCountry(value?: string) {
   );
 }
 
-function normalizePhoneValue(value: string) {
+function countryCallingDigits(country?: PhoneCountry) {
+  return country?.countryCallingCodes[0]?.replace(/\D/g, "") ?? "";
+}
+
+function getNationalPhoneValue(
+  value: string,
+  country: PhoneCountry | undefined,
+  isInternationalEntry: boolean,
+) {
   const trimmed = value.trim();
 
   if (!trimmed) return "";
-  if (trimmed.startsWith("+")) return trimmed;
-  if (trimmed.startsWith("00")) return `+${trimmed.slice(2)}`;
 
-  return `+${trimmed}`;
+  const countryPrefix = countryCallingDigits(country);
+
+  if (trimmed.startsWith("+") || trimmed.startsWith("00")) {
+    const internationalDigits = trimmed
+      .replace(/^00/, "")
+      .replace(/\D/g, "");
+
+    if (countryPrefix && internationalDigits.startsWith(countryPrefix)) {
+      return internationalDigits.slice(countryPrefix.length);
+    }
+
+    return internationalDigits;
+  }
+
+  const localDigits = trimmed.replace(/\D/g, "");
+
+  if (isInternationalEntry && countryPrefix) {
+    if (localDigits.startsWith(countryPrefix)) {
+      return localDigits.slice(countryPrefix.length);
+    }
+
+    if (countryPrefix.startsWith(localDigits)) {
+      return localDigits;
+    }
+  }
+
+  return localDigits;
 }
 
-function getCountryFromPhone(value?: string) {
-  const normalized = normalizePhoneValue(value ?? "");
+export function getNationalPhoneNumber(value?: string | null, countryCode?: string) {
+  const trimmed = value?.trim() ?? "";
 
-  if (!normalized) return undefined;
+  if (!trimmed) return "";
 
-  const parsed = parsePhoneNumberFromString(normalized);
-
-  return parsed?.country ? findCountry(parsed.country) : undefined;
+  return getNationalPhoneValue(
+    trimmed,
+    findCountry(countryCode),
+    trimmed.startsWith("+") || trimmed.startsWith("00"),
+  );
 }
 
-function getFormattedPhone(value: string, country?: PhoneCountry) {
-  const normalized = normalizePhoneValue(value);
+export function getPhoneCountryCode(value?: string | null) {
+  const trimmed = value?.trim() ?? "";
 
-  if (!normalized) return "";
+  if (!trimmed.startsWith("+") && !trimmed.startsWith("00")) return undefined;
+
+  const internationalDigits = trimmed
+    .replace(/^00/, "")
+    .replace(/\D/g, "");
+
+  const country = phoneCountriesByCallingCodeLength.find((item) => {
+    const prefix = countryCallingDigits(item);
+
+    return prefix && internationalDigits.startsWith(prefix);
+  });
+
+  return country?.alpha2.toUpperCase();
+}
+
+export function getInternationalPhoneNumber(value?: string | null, countryCode?: string) {
+  const country = findCountry(countryCode);
+  const nationalValue = getNationalPhoneValue(value ?? "", country, false);
+
+  if (!nationalValue) return "";
 
   const parsed = parsePhoneNumberFromString(
-    normalized,
+    nationalValue,
     country?.alpha2 as CountryCode | undefined,
   );
 
   if (parsed?.number) return parsed.number;
 
-  return normalized;
+  const countryPrefix = country?.countryCallingCodes[0];
+
+  return countryPrefix
+    ? `${countryPrefix}${nationalValue.replace(/^0+/, "")}`
+    : nationalValue;
 }
 
 export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
@@ -105,27 +167,51 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     ref,
   ) => {
     const [open, setOpen] = useState(false);
+    const isInternationalEntryRef = useRef(false);
     const selectedCountry = useMemo(
-      () => getCountryFromPhone(value) ?? findCountry(defaultCountry),
-      [defaultCountry, value],
+      () => findCountry(defaultCountry),
+      [defaultCountry],
     );
     const displayValue = useMemo(
-      () =>
-        value
-          ? new AsYouType(selectedCountry?.alpha2 as CountryCode | undefined).input(value)
-          : "",
+      () => {
+        const nationalValue = getNationalPhoneNumber(value, selectedCountry?.alpha2);
+
+        return nationalValue
+          ? new AsYouType(selectedCountry?.alpha2 as CountryCode | undefined).input(nationalValue)
+          : "";
+      },
       [selectedCountry?.alpha2, value],
     );
-
-    useEffect(() => {
-      onCountryChange?.(selectedCountry);
-    }, [onCountryChange, selectedCountry]);
 
     const emitValue = (
       nextValue: string,
       event: ChangeEvent<HTMLInputElement>,
     ) => {
-      const formattedValue = getFormattedPhone(nextValue, selectedCountry);
+      const trimmedValue = nextValue.trim();
+
+      if (!trimmedValue) {
+        isInternationalEntryRef.current = false;
+      } else if (trimmedValue.startsWith("+") || trimmedValue.startsWith("00")) {
+        isInternationalEntryRef.current = true;
+      }
+
+      const formattedValue = getNationalPhoneValue(
+        nextValue,
+        selectedCountry,
+        isInternationalEntryRef.current,
+      );
+
+      const countryPrefix = countryCallingDigits(selectedCountry);
+      const formattedDigits = formattedValue.replace(/\D/g, "");
+
+      if (
+        isInternationalEntryRef.current &&
+        formattedDigits &&
+        (!countryPrefix || !countryPrefix.startsWith(formattedDigits))
+      ) {
+        isInternationalEntryRef.current = false;
+      }
+
       const syntheticEvent = {
         ...event,
         target: {
@@ -138,19 +224,8 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     };
 
     const selectCountry = (country: PhoneCountry) => {
-      const countryPrefix = country.countryCallingCodes[0] ?? "";
       setOpen(false);
       onCountryChange?.(country);
-
-      if (!value && countryPrefix) {
-        const syntheticEvent = {
-          target: {
-            value: countryPrefix,
-          },
-        } as ChangeEvent<HTMLInputElement>;
-
-        onChange?.(syntheticEvent);
-      }
     };
 
     return (

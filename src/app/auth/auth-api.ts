@@ -48,7 +48,7 @@ type LaravelUserPayload =
       user?: AuthUser;
     };
 
-const toAuthUser = (payload: LaravelUserPayload): AuthUser => {
+export const toAuthUser = (payload: LaravelUserPayload): AuthUser => {
   const source =
     "data" in payload && payload.data
       ? payload.data

@@ -111,7 +111,32 @@ class UserDashboardTest extends TestCase
         $avatar = (string) $response->json('data.avatar');
 
         $this->assertStringContainsString('/storage/profile-avatars/', $avatar);
+        $this->assertStringEndsWith('.webp', $avatar);
+        $this->assertStringNotContainsString('profile.png', $avatar);
         Storage::disk('public')->assertExists(Str::after($avatar, '/storage/'));
+    }
+
+    public function test_user_avatar_upload_rejects_non_image_files(): void
+    {
+        Storage::fake('public');
+        Role::findOrCreate('user');
+
+        $user = User::factory()->create(['email' => 'avatar-security@blacksky.test']);
+        $user->assignRole('user');
+
+        $this->actingAs($user);
+
+        $this->post('/api/v1/me/account', [
+            'name' => 'Avatar Member',
+            'email' => 'avatar-security@blacksky.test',
+            'avatar' => UploadedFile::fake()->create('shell.php', 8, 'application/x-php'),
+        ], [
+            'Accept' => 'application/json',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('avatar');
+
+        $this->assertSame([], Storage::disk('public')->allFiles('profile-avatars'));
     }
 
     public function test_user_can_update_password_from_member_dashboard(): void

@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   Ticket,
   Trash2,
-  Upload,
   UserRound,
 } from "lucide-react";
 import { getAuthErrorMessage } from "../auth/auth-api";
@@ -26,7 +25,12 @@ import { Navbar } from "../components/Navbar";
 import { RegistrationCountryDropdown } from "../components/RegistrationCountryDropdown";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { PhoneInput } from "../components/ui/phone-input";
+import {
+  PhoneInput,
+  getInternationalPhoneNumber,
+  getNationalPhoneNumber,
+  getPhoneCountryCode,
+} from "../components/ui/phone-input";
 import type { MemberNotification, MemberTicket } from "../user-dashboard/user-dashboard-api";
 import {
   useMemberDashboard,
@@ -40,6 +44,7 @@ const accountSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters.").max(180, "Full name is too long."),
   email: z.string().email("Enter a valid email address."),
   phone: z.string().max(20, "Phone number is too long.").optional(),
+  phoneCountryCode: z.string().max(2).optional(),
   countryCode: z.string().max(2).optional(),
   dateOfBirth: z.string().optional(),
   gender: z.enum(["", "male", "female", "non_binary", "prefer_not_to_say"]),
@@ -111,6 +116,10 @@ const birthMonthOptions = [
   { value: "12", label: "December" },
 ];
 
+const AVATAR_CLIENT_MAX_EDGE = 1280;
+const AVATAR_CLIENT_TARGET_BYTES = 1_600_000;
+const AVATAR_CLIENT_QUALITIES = [0.84, 0.74, 0.64, 0.54];
+
 const viewFromPath = (pathname: string): DashboardView => {
   if (pathname.endsWith("/account")) return "account";
   if (pathname.endsWith("/saved-events")) return "saved-events";
@@ -131,7 +140,7 @@ const viewCopy: Record<DashboardView, { eyebrow: string; title: string; descript
   account: {
     eyebrow: "Account",
     title: "Account details",
-    description: "Keep your contact details ready for ticket sync, event alerts, and support.",
+    description: "Update your profile information and account preferences.",
   },
   "saved-events": {
     eyebrow: "Saved events",
@@ -297,6 +306,90 @@ function userInitials(name?: string | null, email?: string | null) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+function loadImageElement(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Upload a valid image file."));
+    };
+    image.src = objectUrl;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
+  return new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, type, quality);
+  });
+}
+
+async function compressAvatarFile(file: File): Promise<File> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Upload an image file for your profile photo.");
+  }
+
+  const image = await loadImageElement(file);
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+
+  if (!sourceWidth || !sourceHeight) {
+    throw new Error("The profile image could not be read.");
+  }
+
+  const scale = Math.min(1, AVATAR_CLIENT_MAX_EDGE / Math.max(sourceWidth, sourceHeight));
+
+  if (scale === 1 && file.size <= AVATAR_CLIENT_TARGET_BYTES) {
+    return file;
+  }
+
+  const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
+  const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("The browser could not prepare the profile image.");
+  }
+
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+  const baseName = file.name.replace(/\.[^.]+$/, "") || "profile-photo";
+  const finalQuality = AVATAR_CLIENT_QUALITIES[AVATAR_CLIENT_QUALITIES.length - 1];
+
+  for (const quality of AVATAR_CLIENT_QUALITIES) {
+    const blob = await canvasToBlob(canvas, "image/webp", quality);
+
+    if (blob && (blob.size <= AVATAR_CLIENT_TARGET_BYTES || quality === finalQuality)) {
+      return new File([blob], `${baseName}-compressed.webp`, {
+        type: "image/webp",
+        lastModified: Date.now(),
+      });
+    }
+  }
+
+  const fallbackBlob = await canvasToBlob(canvas, "image/jpeg", 0.72);
+
+  if (!fallbackBlob) {
+    throw new Error("The profile image could not be compressed.");
+  }
+
+  return new File([fallbackBlob], `${baseName}-compressed.jpg`, {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
 }
 
 function normalizeGender(value?: string | null): AccountFormValues["gender"] {
@@ -580,7 +673,9 @@ export function UserDashboardPage() {
   const [removeAccountError, setRemoveAccountError] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarIsCompressing, setAvatarIsCompressing] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const avatarCompressionRunRef = useRef(0);
   const data = dashboardQuery.data;
   const user = data?.user;
 
@@ -590,6 +685,7 @@ export function UserDashboardPage() {
       fullName: "",
       email: "",
       phone: "",
+      phoneCountryCode: "MY",
       countryCode: "",
       dateOfBirth: "",
       gender: "",
@@ -618,20 +714,25 @@ export function UserDashboardPage() {
       ).length,
     [data?.saved_events, today],
   );
+  const selectedPhoneCountryCode = accountForm.watch("phoneCountryCode") || "MY";
 
   useEffect(() => {
     if (!user) return;
 
+    const phoneCountryCode = getPhoneCountryCode(user.phone) ?? user.countryCode ?? "MY";
+
     accountForm.reset({
       fullName: user.name ?? "",
       email: user.email,
-      phone: user.phone ?? "",
+      phone: getNationalPhoneNumber(user.phone, phoneCountryCode),
+      phoneCountryCode,
       countryCode: user.countryCode ?? "",
       dateOfBirth: user.dateOfBirth ?? "",
       gender: normalizeGender(user.gender),
     });
     setAvatarFile(null);
     setAvatarPreview(user.avatar ?? null);
+    setAvatarIsCompressing(false);
   }, [accountForm, user]);
 
   useEffect(() => {
@@ -647,18 +748,45 @@ export function UserDashboardPage() {
     navigate("/login", { replace: true });
   };
 
-  const handleAvatarChange = (file?: File | null) => {
+  const handleAvatarChange = async (file?: File | null) => {
     if (!file) return;
 
+    const runId = avatarCompressionRunRef.current + 1;
+    avatarCompressionRunRef.current = runId;
+
     setAccountError("");
-    setAvatarFile(file);
-    setAvatarPreview((current) => {
-      if (current?.startsWith("blob:")) {
-        URL.revokeObjectURL(current);
+    setAccountMessage("");
+    setAvatarIsCompressing(true);
+
+    try {
+      const compressedFile = await compressAvatarFile(file);
+
+      if (avatarCompressionRunRef.current !== runId) {
+        return;
       }
 
-      return URL.createObjectURL(file);
-    });
+      setAvatarFile(compressedFile);
+      setAvatarPreview((current) => {
+        if (current?.startsWith("blob:")) {
+          URL.revokeObjectURL(current);
+        }
+
+        return URL.createObjectURL(compressedFile);
+      });
+
+      setAccountMessage("Profile photo ready to save.");
+    } catch (error) {
+      if (avatarCompressionRunRef.current !== runId) {
+        return;
+      }
+
+      setAvatarFile(null);
+      setAccountError(error instanceof Error ? error.message : "Unable to prepare profile image.");
+    } finally {
+      if (avatarCompressionRunRef.current === runId) {
+        setAvatarIsCompressing(false);
+      }
+    }
   };
 
   const submitAccount = accountForm.handleSubmit(async (values) => {
@@ -669,7 +797,7 @@ export function UserDashboardPage() {
       await updateAccountMutation.mutateAsync({
         name: values.fullName.trim(),
         email: values.email,
-        phone: values.phone ?? "",
+        phone: getInternationalPhoneNumber(values.phone, values.phoneCountryCode ?? "MY"),
         country_code: values.countryCode ?? "",
         date_of_birth: values.dateOfBirth ?? "",
         gender: values.gender || "",
@@ -776,25 +904,35 @@ export function UserDashboardPage() {
                             ref={avatarInputRef}
                             id="member-avatar"
                             type="file"
-                            accept="image/png,image/jpeg,image/webp,image/gif"
-                            onChange={(event) => handleAvatarChange(event.target.files?.[0])}
+                            accept="image/*"
+                            disabled={avatarIsCompressing}
+                            onChange={(event) => {
+                              void handleAvatarChange(event.target.files?.[0]);
+                              event.currentTarget.value = "";
+                            }}
                           />
-                          <button
-                            type="button"
+                          <label
+                            htmlFor="member-avatar"
                             className="member-avatar-upload__button"
-                            onClick={() => avatarInputRef.current?.click()}
+                            aria-disabled={avatarIsCompressing}
+                            role="button"
+                            tabIndex={avatarIsCompressing ? -1 : 0}
+                            onKeyDown={(event) => {
+                              if (avatarIsCompressing) return;
+
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                avatarInputRef.current?.click();
+                              }
+                            }}
                           >
                             <Camera aria-hidden="true" />
-                            Change photo
-                          </button>
+                            {avatarIsCompressing ? "Compressing" : "Change photo"}
+                          </label>
                         </div>
                         <div>
                           <strong>{user?.name ?? "Black Sky Member"}</strong>
                           <p>{user?.email}</p>
-                          <small>
-                            <Upload aria-hidden="true" />
-                            JPG, PNG, WEBP or GIF
-                          </small>
                         </div>
                       </div>
                     </section>
@@ -869,8 +1007,15 @@ export function UserDashboardPage() {
                             <PhoneInput
                               id="member-phone"
                               value={field.value ?? ""}
-                              defaultCountry={accountForm.watch("countryCode") || "MY"}
+                              defaultCountry={selectedPhoneCountryCode}
                               onChange={field.onChange}
+                              onCountryChange={(country) => {
+                                if (!country) return;
+
+                                accountForm.setValue("phoneCountryCode", country.alpha2.toUpperCase(), {
+                                  shouldDirty: true,
+                                });
+                              }}
                               onBlur={field.onBlur}
                               placeholder="Enter phone number"
                             />
@@ -885,23 +1030,32 @@ export function UserDashboardPage() {
                       {accountError || accountMessage}
                     </p>
                     <div className="member-form-actions">
-                      <button type="submit" disabled={updateAccountMutation.isPending}>
-                        {updateAccountMutation.isPending ? "Saving" : "Save changes"}
+                      <button type="submit" disabled={updateAccountMutation.isPending || avatarIsCompressing}>
+                        {avatarIsCompressing
+                          ? "Preparing photo"
+                          : updateAccountMutation.isPending
+                            ? "Saving"
+                            : "Save changes"}
                       </button>
                       <button
                         type="button"
                         className="member-secondary-button"
                         onClick={() => {
+                          const phoneCountryCode = getPhoneCountryCode(user?.phone) ?? user?.countryCode ?? "MY";
+
+                          avatarCompressionRunRef.current += 1;
                           accountForm.reset({
                             fullName: user?.name ?? "",
                             email: user?.email ?? "",
-                            phone: user?.phone ?? "",
+                            phone: getNationalPhoneNumber(user?.phone, phoneCountryCode),
+                            phoneCountryCode,
                             countryCode: user?.countryCode ?? "",
                             dateOfBirth: user?.dateOfBirth ?? "",
                             gender: normalizeGender(user?.gender),
                           });
                           setAvatarFile(null);
                           setAvatarPreview(user?.avatar ?? null);
+                          setAvatarIsCompressing(false);
                           setAccountMessage("");
                           setAccountError("");
                         }}
@@ -1039,7 +1193,7 @@ export function UserDashboardPage() {
                       <span>Permanent action</span>
                       <h3>Remove your Black Sky account</h3>
                       <p>
-                        This removes your member profile and saved events. Synced ticket records keep their vendor audit trail, but they will no longer be attached to this login.
+                        This removes your member profile and saved events.
                       </p>
                     </div>
                     <div className="member-form-grid">

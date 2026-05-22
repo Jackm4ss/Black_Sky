@@ -9,6 +9,7 @@ use App\Models\Bookmark;
 use App\Models\Event;
 use App\Models\SyncedTransaction;
 use App\Models\User;
+use App\Support\MemberNotificationFeed;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,10 @@ class UserDashboardController extends Controller
         'image/webp',
         'image/gif',
     ];
+
+    public function __construct(private readonly MemberNotificationFeed $notificationFeed)
+    {
+    }
 
     public function show(Request $request): JsonResponse
     {
@@ -68,6 +73,8 @@ class UserDashboardController extends Controller
                 'title' => (string) data_get($notification->data, 'title', 'Black Sky update'),
                 'body' => (string) data_get($notification->data, 'body', 'New member notification.'),
                 'type' => (string) data_get($notification->data, 'type', 'notice'),
+                'source' => (string) data_get($notification->data, 'source', 'admin'),
+                'action_url' => data_get($notification->data, 'action_url'),
                 'read_at' => $notification->read_at?->toISOString(),
                 'created_at' => $notification->created_at?->toISOString(),
             ])
@@ -131,15 +138,7 @@ class UserDashboardController extends Controller
             ],
         ]);
 
-        $emailChanged = $user->email !== $validated['email'];
-        $avatarUrl = null;
-        $previousAvatar = $user->avatar;
-
-        if ($request->hasFile('avatar')) {
-            $avatarUrl = $this->storeCompressedAvatar($request->file('avatar'), $user);
-        }
-
-        $user->forceFill([
+        $accountDetails = [
             'name' => $validated['name'],
             'email' => Str::lower($validated['email']),
             'phone' => ($validated['phone'] ?? null) ?: null,
@@ -148,12 +147,50 @@ class UserDashboardController extends Controller
                 : null,
             'date_of_birth' => $validated['date_of_birth'] ?? null,
             'gender' => $validated['gender'] ?? null,
+        ];
+        $originalAccountDetails = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'registration_country_code' => $user->registration_country_code,
+            'date_of_birth' => $user->date_of_birth?->toDateString(),
+            'gender' => $user->gender,
+        ];
+        $accountDetailsChanged = $accountDetails !== $originalAccountDetails;
+        $emailChanged = $user->email !== $accountDetails['email'];
+        $avatarUrl = null;
+        $previousAvatar = $user->avatar;
+
+        if ($request->hasFile('avatar')) {
+            $avatarUrl = $this->storeCompressedAvatar($request->file('avatar'), $user);
+        }
+
+        $user->forceFill([
+            ...$accountDetails,
             'avatar' => $avatarUrl ?? $user->avatar,
             'email_verified_at' => $emailChanged ? null : $user->email_verified_at,
         ])->save();
 
         if ($avatarUrl) {
             $this->deleteStoredAvatar($previousAvatar);
+        }
+
+        if ($accountDetailsChanged) {
+            $this->notificationFeed->recordActivity(
+                user: $user,
+                title: 'Profile updated',
+                body: 'Your account profile details were updated.',
+                activityType: 'account.profile_updated',
+            );
+        }
+
+        if ($avatarUrl) {
+            $this->notificationFeed->recordActivity(
+                user: $user,
+                title: 'Profile photo updated',
+                body: 'Your member profile photo was changed.',
+                activityType: 'account.photo_updated',
+            );
         }
 
         return response()->json([
@@ -171,6 +208,13 @@ class UserDashboardController extends Controller
             'password' => (string) $request->input('password'),
             'password_confirmation' => (string) $request->input('password_confirmation'),
         ]);
+
+        $this->notificationFeed->recordActivity(
+            user: $user,
+            title: 'Password changed',
+            body: 'Your account password was updated.',
+            activityType: 'account.password_updated',
+        );
 
         return response()->json([
             'message' => 'Password updated.',
@@ -217,6 +261,16 @@ class UserDashboardController extends Controller
             'user_id' => $user->id,
             'event_id' => $event->id,
         ]);
+
+        if ($bookmark->wasRecentlyCreated) {
+            $this->notificationFeed->recordActivity(
+                user: $user,
+                title: 'Event saved',
+                body: '"' . $event->title . '" was added to your saved events.',
+                activityType: 'saved_event.created',
+                actionUrl: '/events/' . $event->slug,
+            );
+        }
 
         return response()->json([
             'data' => [

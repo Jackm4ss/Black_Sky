@@ -149,8 +149,8 @@ const viewCopy: Record<DashboardView, { eyebrow: string; title: string; descript
   },
   notifications: {
     eyebrow: "Notifications",
-    title: "Event alerts",
-    description: "Black Sky announcements, ticket updates, and account messages.",
+    title: "Notifications",
+    description: "Admin broadcasts and your own account activity appear here.",
   },
   password: {
     eyebrow: "Password",
@@ -615,6 +615,8 @@ function TicketRow({ ticket }: { ticket: MemberTicket }) {
 }
 
 function NotificationRow({ notification }: { notification: MemberNotification }) {
+  const sourceLabel = notification.source === "activity" ? "Activity" : "Admin broadcast";
+
   return (
     <article className="member-notification-row" data-unread={!notification.read_at}>
       <Bell aria-hidden="true" />
@@ -622,7 +624,10 @@ function NotificationRow({ notification }: { notification: MemberNotification })
         <strong>{notification.title}</strong>
         <p>{notification.body}</p>
       </div>
-      <small>{formatDate(notification.created_at)}</small>
+      <div className="member-notification-row__meta">
+        <span>{sourceLabel}</span>
+        <small>{formatDate(notification.created_at)}</small>
+      </div>
     </article>
   );
 }
@@ -1112,7 +1117,7 @@ export function UserDashboardPage() {
                     <EmptyState
                       icon={Bell}
                       title="No notifications yet"
-                      description="Event announcements and ticket updates from Black Sky will appear here."
+                      description="Admin broadcasts and your account activity will appear here."
                     />
                   )
                 ) : null}

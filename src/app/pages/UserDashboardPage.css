@@ -524,13 +524,35 @@
 }
 
 .member-ticket-row__meta small,
-.member-notification-row small {
+.member-notification-row__meta small {
   color: rgba(255, 255, 255, 0.48);
   font-family: "Inter", sans-serif;
 }
 
 .member-notification-row {
   grid-template-columns: 34px minmax(0, 1fr) auto;
+}
+
+.member-notification-row__meta {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  min-width: 128px;
+  text-align: right;
+}
+
+.member-notification-row__meta span {
+  width: fit-content;
+  border: 1px solid rgba(14, 165, 233, 0.32);
+  padding: 4px 8px;
+  background: rgba(14, 165, 233, 0.08);
+  color: #7dd3fc;
+  font-family: "Inter", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .member-notification-row[data-unread="true"] {
@@ -1058,7 +1080,8 @@
   }
 
   .member-profile-summary button,
-  .member-ticket-row__meta {
+  .member-ticket-row__meta,
+  .member-notification-row__meta {
     width: max-content;
     justify-items: start;
     text-align: left;

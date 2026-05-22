@@ -6,6 +6,7 @@ use App\Models\Bookmark;
 use App\Models\Event;
 use App\Models\SyncedTransaction;
 use App\Models\User;
+use App\Support\MemberNotificationFeed;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +62,53 @@ class UserDashboardTest extends TestCase
             ->assertJsonPath('data.saved_events.0.event.slug', 'member-night-live');
     }
 
+    public function test_member_dashboard_only_returns_own_notifications_with_admin_broadcasts(): void
+    {
+        Role::findOrCreate('admin');
+        Role::findOrCreate('user');
+
+        $user = User::factory()->create(['email' => 'member-feed@blacksky.test']);
+        $otherUser = User::factory()->create(['email' => 'other-feed@blacksky.test']);
+        $admin = User::factory()->create(['email' => 'admin-feed@blacksky.test']);
+        $user->assignRole('user');
+        $otherUser->assignRole('user');
+        $admin->assignRole('admin');
+
+        $feed = app(MemberNotificationFeed::class);
+        $feed->broadcastToMembers(
+            title: 'Admin broadcast',
+            body: 'A new Black Sky announcement is live.',
+            adminId: $admin->id,
+        );
+        $feed->recordActivity(
+            user: $otherUser,
+            title: 'Other profile updated',
+            body: 'This belongs to another member.',
+            activityType: 'account.profile_updated',
+        );
+        $feed->recordActivity(
+            user: $user,
+            title: 'Profile updated',
+            body: 'Your account profile details were updated.',
+            activityType: 'account.profile_updated',
+        );
+
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('/api/v1/me/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.stats.unread_notifications', 2);
+
+        $notifications = collect($response->json('data.notifications'));
+        $titles = $notifications->pluck('title');
+
+        $this->assertContains('Admin broadcast', $titles);
+        $this->assertContains('Profile updated', $titles);
+        $this->assertNotContains('Other profile updated', $titles);
+        $this->assertSame('admin', $notifications->firstWhere('title', 'Admin broadcast')['source']);
+        $this->assertSame('activity', $notifications->firstWhere('title', 'Profile updated')['source']);
+    }
+
     public function test_user_can_update_account_details(): void
     {
         Role::findOrCreate('user');
@@ -84,6 +132,10 @@ class UserDashboardTest extends TestCase
             ->assertJsonPath('data.country_code', 'ID')
             ->assertJsonPath('data.date_of_birth', '1998-04-21')
             ->assertJsonPath('data.gender', 'prefer_not_to_say');
+
+        $this->assertTrue($user->fresh()->notifications->contains(
+            fn ($notification): bool => data_get($notification->data, 'type') === 'account.profile_updated',
+        ));
     }
 
     public function test_user_can_upload_profile_avatar(): void
@@ -114,6 +166,9 @@ class UserDashboardTest extends TestCase
         $this->assertStringEndsWith('.webp', $avatar);
         $this->assertStringNotContainsString('profile.png', $avatar);
         Storage::disk('public')->assertExists(Str::after($avatar, '/storage/'));
+        $this->assertTrue($user->fresh()->notifications->contains(
+            fn ($notification): bool => data_get($notification->data, 'type') === 'account.photo_updated',
+        ));
     }
 
     public function test_user_avatar_upload_rejects_non_image_files(): void
@@ -159,6 +214,9 @@ class UserDashboardTest extends TestCase
             ->assertJsonPath('message', 'Password updated.');
 
         $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
+        $this->assertTrue($user->fresh()->notifications->contains(
+            fn ($notification): bool => data_get($notification->data, 'type') === 'account.password_updated',
+        ));
     }
 
     public function test_user_can_save_and_remove_event_bookmark(): void
@@ -179,6 +237,9 @@ class UserDashboardTest extends TestCase
             'user_id' => $user->id,
             'event_id' => $event->id,
         ]);
+        $this->assertTrue($user->fresh()->notifications->contains(
+            fn ($notification): bool => data_get($notification->data, 'type') === 'saved_event.created',
+        ));
 
         $this->deleteJson('/api/v1/me/bookmarks/' . $event->id)
             ->assertOk();

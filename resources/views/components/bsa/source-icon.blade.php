@@ -6,7 +6,8 @@
 ])
 
 @php
-    $iconStyle = str_starts_with((string) $icon, 'si-') ? 'fill' : 'stroke';
+    $iconName = trim((string) $icon) ?: 'heroicon-o-question-mark-circle';
+    $iconStyle = str_starts_with($iconName, 'si-') ? 'fill' : 'stroke';
 @endphp
 
 <span
@@ -23,5 +24,5 @@
             'data-icon-style' => $iconStyle,
         ]) }}
 >
-    <x-dynamic-component :component="$icon" />
+    <x-dynamic-component :component="$iconName" aria-hidden="true" focusable="false" />
 </span>

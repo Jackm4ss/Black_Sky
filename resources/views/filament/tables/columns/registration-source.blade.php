@@ -15,7 +15,12 @@
     </span>
 @else
     <span class="bsa-table-source bsa-table-source--empty">
-        <x-heroicon-o-minus-circle />
+        <x-bsa.source-icon
+            icon="heroicon-o-minus-circle"
+            color="#94A3B8"
+            label="No attribution"
+            compact
+        />
         <span>No attribution</span>
     </span>
 @endif

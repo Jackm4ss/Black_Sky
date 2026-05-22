@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use App\Support\CountryDataList;
 use App\Support\RegistrationSourceMeta;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -93,26 +94,7 @@ class UserResource extends Resource
                             ->searchable(),
                         Forms\Components\Select::make('registration_country_code')
                             ->label('Country')
-                            ->options([
-                                'MY' => 'Malaysia',
-                                'ID' => 'Indonesia',
-                                'SG' => 'Singapore',
-                                'TH' => 'Thailand',
-                                'PH' => 'Philippines',
-                                'VN' => 'Vietnam',
-                                'BN' => 'Brunei',
-                                'KH' => 'Cambodia',
-                                'LA' => 'Laos',
-                                'MM' => 'Myanmar',
-                                'JP' => 'Japan',
-                                'KR' => 'South Korea',
-                                'CN' => 'China',
-                                'TW' => 'Taiwan',
-                                'HK' => 'Hong Kong',
-                                'AU' => 'Australia',
-                                'US' => 'United States',
-                                'GB' => 'United Kingdom',
-                            ])
+                            ->options(CountryDataList::assignedCountryOptions())
                             ->searchable()
                             ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? Str::upper($state) : null),
                         Forms\Components\TextInput::make('registration_referrer')
@@ -130,42 +112,26 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable()
-                    ->sortable()
-                    ->weight('bold'),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable()
+                Tables\Columns\ViewColumn::make('name')
+                    ->label('Name')
+                    ->view('filament.tables.columns.user-identity')
+                    ->searchable(['name', 'email'])
                     ->sortable(),
-                Tables\Columns\TextColumn::make('roles.name')
-                    ->label('Roles')
-                    ->badge()
-                    ->separator(','),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Active')
-                    ->boolean(),
                 Tables\Columns\ViewColumn::make('registration_source')
                     ->label('Source')
                     ->view('filament.tables.columns.registration-source'),
-                Tables\Columns\TextColumn::make('registration_country_code')
+                Tables\Columns\ViewColumn::make('registration_country_code')
                     ->label('Country')
-                    ->placeholder('-')
-                    ->toggleable(),
+                    ->view('filament.tables.columns.registration-country'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('M d, Y')
-                    ->sortable()
-                    ->toggleable(),
+                    ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active status'),
-                Tables\Filters\SelectFilter::make('role')
-                    ->options([
-                        'user' => 'User',
-                    ])
-                    ->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null)
-                        ? $query->role($data['value'])
-                        : $query),
+                Tables\Filters\SelectFilter::make('registration_country_code')
+                    ->label('Country')
+                    ->options(fn (): array => self::registrationCountryFilterOptions())
+                    ->searchable(),
                 Tables\Filters\SelectFilter::make('registration_source')
                     ->label('Traffic source')
                     ->options(RegistrationSourceMeta::options()),
@@ -175,6 +141,8 @@ class UserResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn (User $record): bool => Auth::id() !== $record->id),
             ])
+            ->actionsAlignment('center')
+            ->actionsColumnLabel('Action')
             ->defaultSort('created_at', 'desc');
     }
 
@@ -185,5 +153,19 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function registrationCountryFilterOptions(): array
+    {
+        $codes = self::getEloquentQuery()
+            ->whereNotNull('registration_country_code')
+            ->distinct()
+            ->pluck('registration_country_code')
+            ->all();
+
+        return CountryDataList::assignedCountryOptionsForCodes($codes);
     }
 }

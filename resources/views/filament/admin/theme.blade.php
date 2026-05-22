@@ -1,5 +1,6 @@
+@viteReactRefresh
+
 @if (request()->is('admin/login'))
-    @viteReactRefresh
     @vite('src/filament-auth-shape-grid.tsx')
 @else
     @vite('src/filament-admin.ts')
@@ -990,11 +991,90 @@
         white-space: nowrap;
     }
 
+    .bsa-table-member {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 220px;
+    }
+
+    .bsa-table-member__avatar {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+        overflow: hidden;
+        border: 2px solid var(--neo-ink);
+        border-radius: 2px;
+        background: var(--neo-dark-elevated);
+        box-shadow: 3px 3px 0 var(--neo-ink);
+        color: var(--neo-dark-text);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        line-height: 1;
+    }
+
+    .bsa-table-member__avatar img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .bsa-table-member__copy {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .bsa-table-member__copy strong {
+        overflow: hidden;
+        color: var(--neo-dark-text);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        line-height: 1.1;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .bsa-table-member__copy span {
+        overflow: hidden;
+        color: var(--neo-dark-muted);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .bsa-table-country {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 34px;
+        color: var(--neo-dark-text);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
     .bsa-table-source > span:last-child {
         color: inherit;
     }
 
-    .bsa-table-source--empty {
+    .bsa-table-source--empty,
+    .bsa-table-country--empty {
         color: var(--neo-dark-muted);
         gap: 8px;
     }
@@ -1023,18 +1103,43 @@
     }
 
     .bsa-country-flag {
-        display: block !important;
+        display: grid !important;
+        place-items: center;
         width: 42px !important;
         height: 42px !important;
         margin: 0 !important;
         border: 2px solid var(--neo-ink);
         border-radius: 2px;
         background-color: var(--neo-dark-elevated);
-        background-position: center !important;
-        background-repeat: no-repeat !important;
-        background-size: 34px auto !important;
         box-shadow: 3px 3px 0 var(--neo-ink);
         line-height: 1 !important;
+        overflow: hidden;
+    }
+
+    .bsa-country-flag img {
+        display: block;
+        width: 28px !important;
+        height: 28px !important;
+        margin: 0 !important;
+    }
+
+    .bsa-country-flag__fallback {
+        color: var(--neo-dark-text);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+    }
+
+    .bsa-country-flag--compact {
+        width: 28px !important;
+        height: 28px !important;
+        box-shadow: 2px 2px 0 var(--neo-ink);
+    }
+
+    .bsa-country-flag--compact img {
+        width: 18px !important;
+        height: 18px !important;
     }
 
     .bsa-country-row strong {
@@ -2404,6 +2509,15 @@
     .fi-resource-list-records-page .fi-ta-header-cell button {
         color: var(--neo-dark-muted) !important;
         font-size: 12px !important;
+    }
+
+    .fi-resource-users .fi-ta-table thead th:last-child > .group {
+        justify-content: center !important;
+    }
+
+    .fi-resource-users .fi-ta-actions-cell > div {
+        display: flex;
+        justify-content: center;
     }
 
     .fi-resource-list-records-page .fi-ta-row:hover {

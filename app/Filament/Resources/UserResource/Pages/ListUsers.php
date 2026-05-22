@@ -46,7 +46,6 @@ class ListUsers extends ListRecords
                         ->success()
                         ->send();
                 }),
-            Actions\CreateAction::make(),
         ];
     }
 }

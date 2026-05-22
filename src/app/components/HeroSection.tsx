@@ -212,73 +212,50 @@ export function HeroSection() {
           </p>
 
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-            <a
+            <motion.a
               href="/discover"
-              className="flex items-center gap-2 sm:gap-3 px-5 py-3 sm:px-8 sm:py-4 transition-all duration-300 hover:gap-4 sm:hover:gap-5"
+              className="flex items-center gap-2 sm:gap-3 px-5 py-3 sm:px-8 sm:py-4 transition-all duration-300"
               style={{
-                alignItems: "center",
-                background: "#0284C7",
-                display: "flex",
+                border: "none",
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: "clamp(10.5px, 2vw, 13px)",
-                letterSpacing: "0.18em",
-                color: "#fff",
-                border: "none",
+                fontSize: "clamp(10.5px, 2vw, 12px)",
+                letterSpacing: "0.25em",
+                color: "#030213",
+                background: "#FFFFFF",
                 cursor: "pointer",
-                clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+                flexShrink: 0,
+                lineHeight: 1,
                 textDecoration: "none",
               }}
+              whileHover={{ opacity: 0.9 }}
             >
               EXPLORE MORE
-              <ArrowRight size={16} />
-            </a>
+              <ArrowRight size={12} />
+            </motion.a>
 
             {!user ? (
-              <div
-                className="relative hero-ticket-border p-[1px]"
+              <motion.a
+                href="/register"
+                className="relative z-10 flex items-center gap-2 sm:gap-3 px-5 py-3 sm:px-8 sm:py-4 transition-all duration-300"
                 style={{
-                  clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+                  background: "#0EA5E9",
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700,
+                  fontSize: "clamp(10.5px, 2vw, 12px)",
+                  letterSpacing: "0.25em",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  lineHeight: 1,
+                  textDecoration: "none",
                 }}
+                whileHover={{ opacity: 0.9 }}
               >
-                <span
-                  className="absolute left-0 top-2 bottom-2 z-20 pointer-events-none hero-ticket-side"
-                  style={{ width: 2, background: "#0EA5E9" }}
-                />
-                <span
-                  className="absolute right-0 top-2 bottom-2 z-20 pointer-events-none hero-ticket-side"
-                  style={{ width: 2, background: "#0EA5E9" }}
-                />
-                <a
-                  href="/register"
-                  className="relative z-10 flex items-center gap-2 sm:gap-3 px-5 py-3 sm:px-8 sm:py-4 transition-all duration-300"
-                  style={{
-                    alignItems: "center",
-                    background: "rgba(3,7,12,0.72)",
-                    display: "flex",
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontWeight: 700,
-                    fontSize: "clamp(10.5px, 2vw, 13px)",
-                    letterSpacing: "0.18em",
-                    color: "rgba(255,255,255,0.82)",
-                    border: "none",
-                    cursor: "pointer",
-                    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
-                    textDecoration: "none",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(14,165,233,0.18)";
-                    e.currentTarget.style.color = "#fff";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(3,7,12,0.72)";
-                    e.currentTarget.style.color = "rgba(255,255,255,0.82)";
-                  }}
-                >
-                  GET TICKET
-                  <ArrowUpRight size={15} />
-                </a>
-              </div>
+                GET TICKET
+                <ArrowUpRight size={12} />
+              </motion.a>
             ) : null}
           </div>
         </motion.div>
@@ -395,35 +372,6 @@ export function HeroSection() {
       </div>
 
       <style>{`
-        .hero-ticket-border {
-          background: linear-gradient(
-            90deg,
-            rgba(14, 165, 233, 0.16),
-            rgba(14, 165, 233, 0.98),
-            rgba(14, 165, 233, 0.38),
-            rgba(14, 165, 233, 0.98),
-            rgba(14, 165, 233, 0.16)
-          );
-          background-size: 320% 100%;
-          animation: ticketBorderFlow 5s steps(125) infinite;
-          box-shadow: 0 0 16px rgba(14, 165, 233, 0.2);
-        }
-
-        .hero-ticket-side {
-          animation: ticketSidePulse 3s steps(75) infinite alternate;
-          box-shadow: 0 0 12px rgba(14, 165, 233, 0.65);
-        }
-
-        @keyframes ticketBorderFlow {
-          from { background-position: 0% 50%; }
-          to { background-position: 320% 50%; }
-        }
-
-        @keyframes ticketSidePulse {
-          from { opacity: 0.55; transform: scaleY(0.78); }
-          to { opacity: 1; transform: scaleY(1); }
-        }
-
         @keyframes ticker {
           from { transform: translateX(0); }
           to { transform: translateX(-33.333%); }

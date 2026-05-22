@@ -10,6 +10,7 @@ import { useResetPasswordMutation } from "../auth/auth-queries";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "../auth/auth-schemas";
 import logo from "../../assets/LOGO.png";
 import heroImage from "../../assets/hero-concert-bg.png";
+import { AuthAdminBackground } from "./AuthAdminBackground";
 import { AuthStudioVisualPanel } from "./AuthStudioVisualPanel";
 import "./AuthPages.css";
 
@@ -100,6 +101,7 @@ export function ResetPasswordPage() {
 
   return (
     <main className="login-page">
+      <AuthAdminBackground />
       <section className="login-page__form-side" aria-label="Reset password form">
         <div className="login-page__form-card login-page__form-card--reset">
           <a className="login-page__brand" href="/" aria-label="Black Sky Enterprise">

@@ -21,6 +21,7 @@ import { useRegisterMutation } from "../auth/auth-queries";
 import { registerSchema, type RegisterFormValues } from "../auth/auth-schemas";
 import logo from "../../assets/LOGO.png";
 import heroImage from "../../assets/hero-concert-bg.png";
+import { AuthAdminBackground } from "./AuthAdminBackground";
 import { AuthInfoCard } from "./AuthStudioVisualPanel";
 import "./AuthPages.css";
 
@@ -56,6 +57,7 @@ export function RegisterPage() {
 
   return (
     <main className="login-page">
+      <AuthAdminBackground />
       <section className="login-page__form-side" aria-label="Register form">
         <div className="login-page__form-card login-page__form-card--register">
           <a className="login-page__brand" href="/" aria-label="Black Sky Enterprise">

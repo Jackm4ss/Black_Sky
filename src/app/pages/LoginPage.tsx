@@ -11,6 +11,7 @@ import { useLoginMutation, useLogoutMutation } from "../auth/auth-queries";
 import { loginSchema, type LoginFormValues } from "../auth/auth-schemas";
 import logo from "../../assets/LOGO.png";
 import heroImage from "../../assets/hero-concert-bg.png";
+import { AuthAdminBackground } from "./AuthAdminBackground";
 import { AuthInfoCard } from "./AuthStudioVisualPanel";
 import "./AuthPages.css";
 
@@ -94,6 +95,7 @@ export function LoginPage({ variant = "user" }: LoginPageProps) {
 
   return (
     <main className="login-page">
+      <AuthAdminBackground />
       <section className="login-page__form-side" aria-label="Login form">
         <div className="login-page__form-card">
           <a className="login-page__brand" href="/" aria-label="Black Sky Enterprise">

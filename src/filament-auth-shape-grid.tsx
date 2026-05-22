@@ -13,7 +13,7 @@ const mountShapeGrid = () => {
   createRoot(host).render(
     <ShapeGrid
       direction="diagonal"
-      speed={0.1}
+      speed={0.25}
       squareSize={64}
       borderColor="rgba(148, 163, 184, 0.34)"
       hoverFillColor="rgba(148, 163, 184, 0.16)"

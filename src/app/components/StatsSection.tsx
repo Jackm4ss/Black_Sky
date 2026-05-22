@@ -71,11 +71,10 @@ const stats: Stat[] = [
   },
 ];
 
-function AnimatedNumber({ value, suffix, prefix, color, inView }: {
+function AnimatedNumber({ value, suffix, prefix, inView }: {
   value: number;
   suffix: string;
   prefix?: string;
-  color: string;
   inView: boolean;
 }) {
   const [current, setCurrent] = useState(0);
@@ -105,10 +104,7 @@ function AnimatedNumber({ value, suffix, prefix, color, inView }: {
         fontWeight: 900,
         fontSize: "clamp(3rem, 5vw, 6rem)",
         lineHeight: 1,
-        background: `linear-gradient(135deg, ${color}, ${color}aa)`,
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        backgroundClip: "text",
+        color: "#FFFFFF",
       }}
     >
       {prefix}{current}{suffix}
@@ -249,7 +245,6 @@ export function StatsSection() {
                 value={stat.value}
                 suffix={stat.suffix}
                 prefix={stat.prefix}
-                color={stat.color}
                 inView={isInView}
               />
 

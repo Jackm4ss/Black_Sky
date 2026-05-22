@@ -1,4 +1,5 @@
 @if (request()->is('admin/login'))
+    @viteReactRefresh
     @vite('src/filament-auth-shape-grid.tsx')
 @else
     @vite('src/filament-admin.ts')

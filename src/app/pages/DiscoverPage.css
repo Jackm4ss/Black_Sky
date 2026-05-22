@@ -371,8 +371,88 @@
   color: #fff;
 }
 
-.discover-filter-bar input[type="date"] {
-  color-scheme: dark;
+.discover-date-field {
+  position: relative;
+}
+
+.discover-date-field input,
+.discover-date-input {
+  cursor: pointer;
+}
+
+.discover-flatpickr-calendar {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0;
+  background: #050505;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+}
+
+.discover-flatpickr-calendar::before,
+.discover-flatpickr-calendar::after {
+  border-bottom-color: #050505;
+}
+
+.discover-flatpickr-calendar .flatpickr-months,
+.discover-flatpickr-calendar .flatpickr-weekdays {
+  background: #050505;
+}
+
+.discover-flatpickr-calendar .flatpickr-month,
+.discover-flatpickr-calendar .flatpickr-current-month,
+.discover-flatpickr-calendar .flatpickr-weekday {
+  color: #fff;
+}
+
+.discover-flatpickr-calendar .flatpickr-current-month input.cur-year,
+.discover-flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months {
+  color: #fff;
+  font-weight: 700;
+}
+
+.discover-flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: #050505;
+}
+
+.discover-flatpickr-calendar .flatpickr-prev-month,
+.discover-flatpickr-calendar .flatpickr-next-month {
+  color: rgba(255, 255, 255, 0.72);
+  fill: currentColor;
+}
+
+.discover-flatpickr-calendar .flatpickr-prev-month:hover,
+.discover-flatpickr-calendar .flatpickr-next-month:hover {
+  color: #0ea5e9;
+}
+
+.discover-flatpickr-calendar .flatpickr-day {
+  border-radius: 0;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.discover-flatpickr-calendar .flatpickr-day:hover,
+.discover-flatpickr-calendar .flatpickr-day:focus {
+  border-color: rgba(14, 165, 233, 0.4);
+  background: rgba(14, 165, 233, 0.16);
+  color: #fff;
+}
+
+.discover-flatpickr-calendar .flatpickr-day.today {
+  border-color: #0ea5e9;
+}
+
+.discover-flatpickr-calendar .flatpickr-day.selected,
+.discover-flatpickr-calendar .flatpickr-day.startRange,
+.discover-flatpickr-calendar .flatpickr-day.endRange {
+  border-color: #0ea5e9;
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.discover-flatpickr-calendar .flatpickr-day.prevMonthDay,
+.discover-flatpickr-calendar .flatpickr-day.nextMonthDay {
+  color: rgba(255, 255, 255, 0.28);
 }
 
 .discover-filter-bar button {

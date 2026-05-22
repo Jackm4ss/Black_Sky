@@ -131,18 +131,16 @@ export function Navbar() {
             <a
               href={accountHref}
               onClick={() => setMobileOpen(false)}
-              className="hidden lg:flex items-center gap-2 px-4 py-3 transition-all duration-300 hover:-translate-y-0.5"
+              className="hidden lg:flex items-center gap-2 px-4 py-3 transition-all duration-300 hover:opacity-90"
               style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.12), rgba(14,165,233,0.08))",
-                border: "1px solid rgba(14,165,233,0.42)",
-                boxShadow: "4px 4px 0 rgba(14,165,233,0.16)",
-                color: "#fff",
+                background: "#FFFFFF",
+                border: "none",
+                color: "#030213",
                 cursor: "pointer",
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: "12px",
-                fontWeight: 800,
-                letterSpacing: "0.18em",
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.25em",
                 lineHeight: 1,
                 textDecoration: "none",
                 textTransform: "uppercase",
@@ -160,12 +158,11 @@ export function Navbar() {
                   background: "#0EA5E9",
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 700,
-                  fontSize: "12px",
+                  fontSize: "11px",
                   letterSpacing: "0.25em",
                   color: "#fff",
                   border: "none",
                   cursor: "pointer",
-                  clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)",
                   textDecoration: "none",
                 }}
               >
@@ -255,15 +252,13 @@ export function Navbar() {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "10px",
-                  background:
-                    "linear-gradient(135deg, rgba(255,255,255,0.12), rgba(14,165,233,0.08))",
+                  background: "#FFFFFF",
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 800,
-                  fontSize: "14px",
-                  letterSpacing: "0.18em",
-                  color: "#fff",
-                  border: "1px solid rgba(14,165,233,0.42)",
-                  boxShadow: "5px 5px 0 rgba(14,165,233,0.18)",
+                  fontWeight: 700,
+                  fontSize: "12px",
+                  letterSpacing: "0.25em",
+                  color: "#030213",
+                  border: "none",
                   cursor: "pointer",
                   textAlign: "center",
                   textDecoration: "none",
@@ -283,8 +278,8 @@ export function Navbar() {
                     background: "#0EA5E9",
                     fontFamily: "'Barlow Condensed', sans-serif",
                     fontWeight: 700,
-                    fontSize: "14px",
-                    letterSpacing: 0,
+                    fontSize: "12px",
+                    letterSpacing: "0.25em",
                     color: "#fff",
                     border: "none",
                     cursor: "pointer",

@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
+import flatpickr from "flatpickr";
+import type { Instance } from "flatpickr/dist/types/instance";
 import {
   ArrowUpRight,
   CalendarDays,
@@ -22,6 +24,7 @@ import {
   type PublicEvent,
   type PublicEventQuery,
 } from "../events/events-api";
+import "flatpickr/dist/flatpickr.css";
 import "./DiscoverPage.css";
 
 type Timeframe = "upcoming" | "past";
@@ -79,6 +82,65 @@ function groupEventsByMonth(events: PublicEvent[]) {
 
     return groups;
   }, {});
+}
+
+function DiscoverDateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const pickerRef = useRef<Instance | null>(null);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (!inputRef.current) {
+      return undefined;
+    }
+
+    const picker = flatpickr(inputRef.current, {
+      allowInput: false,
+      altFormat: "M j, Y",
+      altInput: true,
+      altInputClass: "discover-date-input",
+      dateFormat: "Y-m-d",
+      defaultDate: value || undefined,
+      disableMobile: true,
+      onChange: (_selectedDates, dateString) => {
+        onChangeRef.current(dateString);
+      },
+      onReady: (_selectedDates, _dateString, instance) => {
+        instance.calendarContainer.classList.add("discover-flatpickr-calendar");
+      },
+    });
+
+    pickerRef.current = Array.isArray(picker) ? picker[0] ?? null : picker;
+
+    return () => {
+      pickerRef.current?.destroy();
+      pickerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    pickerRef.current?.setDate(value || "", false);
+  }, [value]);
+
+  return (
+    <label className="discover-date-field">
+      <CalendarDays aria-hidden="true" />
+      <span>{label}</span>
+      <input ref={inputRef} type="text" aria-label={`${label} date`} placeholder="Select date" />
+    </label>
+  );
 }
 
 function HeroShowcase({ events }: { events: PublicEvent[] }) {
@@ -395,17 +457,9 @@ export function DiscoverPage() {
               icon={<Music2 aria-hidden="true" />}
             />
 
-            <label>
-              <CalendarDays aria-hidden="true" />
-              <span>From</span>
-              <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} />
-            </label>
+            <DiscoverDateField label="From" value={dateFrom} onChange={setDateFrom} />
 
-            <label>
-              <CalendarDays aria-hidden="true" />
-              <span>To</span>
-              <input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} />
-            </label>
+            <DiscoverDateField label="To" value={dateTo} onChange={setDateTo} />
 
             <FilterDropdown
               ariaLabel="Availability"

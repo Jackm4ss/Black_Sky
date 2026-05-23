@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BlogPost;
 use Database\Seeders\BlogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -49,6 +50,28 @@ class PublicBlogTest extends TestCase
             ->assertJsonPath('data.title', 'How Kuala Lumpur Became Southeast Asia Concert Capital')
             ->assertJsonPath('data.author.name', 'Black Sky Editorial')
             ->assertJsonPath('data.canonical_url', url('/news/kuala-lumpur-southeast-asia-concert-capital'));
+    }
+
+    public function test_public_blog_detail_sanitizes_rich_article_html(): void
+    {
+        $this->seed(BlogSeeder::class);
+
+        BlogPost::query()
+            ->where('slug', 'kuala-lumpur-southeast-asia-concert-capital')
+            ->firstOrFail()
+            ->update([
+                'content' => '<p>Safe update</p><script>alert("xss")</script><a href="javascript:alert(1)" onclick="alert(2)">Bad link</a><a href="https://blacksky.test">Good link</a>',
+            ]);
+
+        $content = (string) $this->getJson('/api/v1/news/kuala-lumpur-southeast-asia-concert-capital')
+            ->assertOk()
+            ->json('data.content');
+
+        $this->assertStringContainsString('<p>Safe update</p>', $content);
+        $this->assertStringContainsString('https://blacksky.test', $content);
+        $this->assertStringNotContainsString('<script', $content);
+        $this->assertStringNotContainsString('javascript:', $content);
+        $this->assertStringNotContainsString('onclick', $content);
     }
 
     public function test_blog_pages_have_indexable_meta(): void

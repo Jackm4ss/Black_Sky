@@ -3,16 +3,17 @@
 namespace App\Filament\Pages\Events;
 
 use App\Models\Event;
+use App\Support\ImageCompressionOptions;
+use App\Support\SafeImageCompressor;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Attributes\Url;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -25,11 +26,15 @@ class ListEvents extends Page
 
     private const EVENT_IMAGE_QUALITY = 82;
 
-    private const EVENT_IMAGE_UPLOAD_MAX_KB = 1024000;
+    private const EVENT_IMAGE_MAX_PIXELS = 50000000;
+
+    private const EVENT_IMAGE_UPLOAD_MAX_KB = 102400;
 
     private const SEAT_MAP_IMAGE_MAX_EDGE = 2560;
 
     private const SEAT_MAP_IMAGE_QUALITY = 86;
+
+    private const SEAT_MAP_IMAGE_MAX_PIXELS = 50000000;
 
     private const DEFAULT_EVENT_TIMEZONE = 'Asia/Kuala_Lumpur';
 
@@ -131,12 +136,12 @@ class ListEvents extends Page
         $this->resetEventForm();
     }
 
-    public function getTitle(): string | Htmlable
+    public function getTitle(): string|Htmlable
     {
         return 'Events';
     }
 
-    public function getHeading(): string | Htmlable
+    public function getHeading(): string|Htmlable
     {
         return '';
     }
@@ -265,7 +270,7 @@ class ListEvents extends Page
 
         $event = $this->editingEventId
             ? Event::query()->findOrFail($this->editingEventId)
-            : new Event();
+            : new Event;
 
         $oldImageUrl = $event->image_url;
         $imageUrl = filled($validated['image_url'] ?? null) ? $validated['image_url'] : $event->image_url;
@@ -320,7 +325,7 @@ class ListEvents extends Page
             'meta_title' => $this->defaultMetaTitle($validated),
             'meta_description' => $this->defaultMetaDescription($validated),
             'meta_keywords' => $this->defaultMetaKeywords($validated),
-            'canonical_url' => url('/events/' . $slug),
+            'canonical_url' => url('/events/'.$slug),
             'og_image' => $imageUrl,
         ]);
         $event->save();
@@ -336,7 +341,7 @@ class ListEvents extends Page
 
         Notification::make()
             ->title('Event saved')
-            ->body($event->title . ' has been saved.')
+            ->body($event->title.' has been saved.')
             ->success()
             ->send();
 
@@ -402,17 +407,26 @@ class ListEvents extends Page
 
     public function deleteEvent(): void
     {
-        $event = Event::query()->findOrFail($this->deletingEventId);
+        $event = Event::query()
+            ->with('sections')
+            ->findOrFail($this->deletingEventId);
         $title = $event->title;
+        $imageUrls = collect([$event->image_url])
+            ->merge($event->sections->pluck('image_url'))
+            ->filter()
+            ->unique()
+            ->values();
 
         $event->delete();
+
+        $imageUrls->each(fn (mixed $imageUrl) => $this->deleteStoredEventImage(is_string($imageUrl) ? $imageUrl : null));
 
         $this->closeDeleteModal();
         $this->resetPage('eventsPage');
 
         Notification::make()
             ->title('Event deleted')
-            ->body($title . ' has been removed.')
+            ->body($title.' has been removed.')
             ->success()
             ->send();
     }
@@ -476,7 +490,7 @@ class ListEvents extends Page
                 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png,webp,gif',
-                'max:' . self::EVENT_IMAGE_UPLOAD_MAX_KB,
+                'max:'.self::EVENT_IMAGE_UPLOAD_MAX_KB,
             ],
             'form.accent_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'form.vendor_url' => ['nullable', 'url', 'max:2048'],
@@ -491,7 +505,7 @@ class ListEvents extends Page
                 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png,webp,gif',
-                'max:' . self::EVENT_IMAGE_UPLOAD_MAX_KB,
+                'max:'.self::EVENT_IMAGE_UPLOAD_MAX_KB,
             ],
             'form.meta_title' => ['nullable', 'string', 'max:255'],
             'form.meta_description' => ['nullable', 'string', 'max:1000'],
@@ -574,77 +588,33 @@ class ListEvents extends Page
         int $maxEdge,
         int $quality,
         string $label,
-    ): string
-    {
-        @ini_set('memory_limit', '1024M');
-        @set_time_limit(120);
-
-        $sourcePath = $upload->getRealPath();
-        $imageInfo = @getimagesize($sourcePath);
-
-        if ($imageInfo === false) {
-            throw ValidationException::withMessages([
-                $errorField => 'The ' . $label . ' file could not be read as an image.',
-            ]);
-        }
-
-        [$sourceWidth, $sourceHeight, $imageType] = $imageInfo;
-        $source = match ($imageType) {
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($sourcePath),
-            IMAGETYPE_PNG => @imagecreatefrompng($sourcePath),
-            IMAGETYPE_WEBP => @imagecreatefromwebp($sourcePath),
-            IMAGETYPE_GIF => @imagecreatefromgif($sourcePath),
-            default => false,
-        };
-
-        if (! $source) {
-            throw ValidationException::withMessages([
-                $errorField => 'The ' . $label . ' format is not supported. Please upload JPG, PNG, WEBP, or GIF.',
-            ]);
-        }
-
-        $scale = min(1, $maxEdge / max($sourceWidth, $sourceHeight));
-        $targetWidth = max(1, (int) round($sourceWidth * $scale));
-        $targetHeight = max(1, (int) round($sourceHeight * $scale));
-        $target = imagecreatetruecolor($targetWidth, $targetHeight);
-
-        imagealphablending($target, false);
-        imagesavealpha($target, true);
-        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, imagecolorallocatealpha($target, 0, 0, 0, 127));
-        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
-
-        $safeSlug = Str::slug($slug) ?: 'event';
-        $relativePath = trim($directory, '/') . '/' . $safeSlug . '-' . Str::uuid() . '.webp';
-
-        Storage::disk('public')->makeDirectory(trim($directory, '/'));
-
-        $stored = @imagewebp($target, Storage::disk('public')->path($relativePath), $quality);
-
-        imagedestroy($source);
-        imagedestroy($target);
-
-        if (! $stored) {
-            throw ValidationException::withMessages([
-                $errorField => 'The ' . $label . ' could not be compressed. Please try another image.',
-            ]);
-        }
-
-        return Storage::disk('public')->url($relativePath);
+    ): string {
+        return $this->imageCompressor()->storeUploaded(
+            $upload,
+            new ImageCompressionOptions(
+                directory: $directory,
+                filenamePrefix: $slug,
+                errorField: $errorField,
+                label: $label,
+                maxEdge: $maxEdge,
+                quality: $quality,
+                maxPixels: str_contains($directory, 'seat-maps')
+                    ? self::SEAT_MAP_IMAGE_MAX_PIXELS
+                    : self::EVENT_IMAGE_MAX_PIXELS,
+                returnUrl: true,
+                timeLimitSeconds: 120,
+            ),
+        );
     }
 
     private function deleteStoredEventImage(?string $imageUrl): void
     {
-        if (blank($imageUrl)) {
-            return;
-        }
+        $this->imageCompressor()->deletePublicPath($imageUrl, 'events/');
+    }
 
-        $path = parse_url($imageUrl, PHP_URL_PATH);
-
-        if (! is_string($path) || ! str_contains($path, '/storage/events/')) {
-            return;
-        }
-
-        Storage::disk('public')->delete(Str::after($path, '/storage/'));
+    private function imageCompressor(): SafeImageCompressor
+    {
+        return app(SafeImageCompressor::class);
     }
 
     private function normalizeSpotifyEmbedUrl(?string $url): ?string
@@ -679,7 +649,7 @@ class ListEvents extends Page
             ]);
         }
 
-        return 'https://open.spotify.com/embed/' . $type . '/' . $id . '?utm_source=generator';
+        return 'https://open.spotify.com/embed/'.$type.'/'.$id.'?utm_source=generator';
     }
 
     private function normalizeGoogleMapsUrl(?string $url): ?string
@@ -707,21 +677,21 @@ class ListEvents extends Page
     }
 
     /**
-     * @param array<string, mixed> $event
+     * @param  array<string, mixed>  $event
      */
     private function defaultMetaTitle(array $event): string
     {
-        return Str::limit($event['title'] . ' | Black Sky Enterprise', 255, '');
+        return Str::limit($event['title'].' | Black Sky Enterprise', 255, '');
     }
 
     /**
-     * @param array<string, mixed> $event
+     * @param  array<string, mixed>  $event
      */
     private function defaultMetaDescription(array $event): string
     {
         $parts = array_filter([
             $event['subtitle'] ?? null,
-            filled($event['venue'] ?? null) ? 'Live at ' . $event['venue'] : null,
+            filled($event['venue'] ?? null) ? 'Live at '.$event['venue'] : null,
             filled($event['city'] ?? null) ? $event['city'] : null,
         ]);
 
@@ -729,7 +699,7 @@ class ListEvents extends Page
     }
 
     /**
-     * @param array<string, mixed> $event
+     * @param  array<string, mixed>  $event
      */
     private function defaultMetaKeywords(array $event): string
     {
@@ -748,7 +718,7 @@ class ListEvents extends Page
     }
 
     /**
-     * @param array<int, array<string, mixed>> $sections
+     * @param  array<int, array<string, mixed>>  $sections
      */
     private function syncEventSections(Event $event, array $sections): void
     {
@@ -796,7 +766,7 @@ class ListEvents extends Page
     }
 
     /**
-     * @param array<string, mixed> $form
+     * @param  array<string, mixed>  $form
      * @return array<int, array<string, mixed>>
      */
     private function eventSectionsFromForm(array $form, ?string $seatMapImageUrl): array

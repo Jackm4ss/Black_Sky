@@ -3,7 +3,7 @@
 return [
     'temporary_file_upload' => [
         'disk' => null,
-        'rules' => ['required', 'file', 'max:1024000'],
+        'rules' => ['required', 'file', 'max:102400'],
         'directory' => null,
         'middleware' => null,
         'preview_mimes' => [

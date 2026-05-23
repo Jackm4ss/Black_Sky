@@ -43,13 +43,18 @@
                         wire:model="eventImage"
                         accept="image/jpeg,image/png,image/webp,image/gif"
                     >
+                    <p class="bsa-events-upload-help">Choose the main image shown with this event.</p>
+                    <p class="bsa-events-upload-status" wire:loading.flex wire:target="eventImage">
+                        <x-heroicon-o-arrow-path />
+                        <span>Preparing image...</span>
+                    </p>
                     @error('eventImage') <em>{{ $message }}</em> @enderror
                 </label>
 
                 <div class="bsa-events-upload-preview">
                     @if ($eventImage)
                         <img src="{{ $eventImage->temporaryUrl() }}" alt="Selected event artwork preview">
-                        <span>Selected artwork</span>
+                        <span>Image ready</span>
                     @elseif (filled($form['image_url'] ?? null))
                         <img src="{{ $form['image_url'] }}" alt="Current event artwork preview">
                         <span>Current artwork</span>
@@ -207,13 +212,18 @@
                         wire:model="seatMapImage"
                         accept="image/jpeg,image/png,image/webp,image/gif"
                     >
+                    <p class="bsa-events-upload-help">Choose the event guide image for the detail page.</p>
+                    <p class="bsa-events-upload-status" wire:loading.flex wire:target="seatMapImage">
+                        <x-heroicon-o-arrow-path />
+                        <span>Preparing image...</span>
+                    </p>
                     @error('seatMapImage') <em>{{ $message }}</em> @enderror
                 </label>
 
                 <div class="bsa-events-upload-preview">
                     @if ($seatMapImage)
                         <img src="{{ $seatMapImage->temporaryUrl() }}" alt="Selected seat map preview">
-                        <span>Selected guide image</span>
+                        <span>Image ready</span>
                     @elseif (filled($form['seat_map_image_url'] ?? null))
                         <img src="{{ $form['seat_map_image_url'] }}" alt="Current seat map preview">
                         <span>Current guide image</span>
@@ -242,7 +252,7 @@
 
     <footer class="bsa-events-modal-footer">
         <a class="bsa-events-modal-secondary" href="{{ \App\Filament\Pages\Events\ListEvents::getUrl() }}">Cancel</a>
-        <button type="submit" class="bsa-events-modal-primary" wire:loading.attr="disabled" wire:target="saveEvent">
+        <button type="submit" class="bsa-events-modal-primary" wire:loading.attr="disabled" wire:target="saveEvent,eventImage,seatMapImage">
             <x-heroicon-o-check />
             <span>{{ $editingEventId ? 'Save Changes' : 'Create Event' }}</span>
         </button>

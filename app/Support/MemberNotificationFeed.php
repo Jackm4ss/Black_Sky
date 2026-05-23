@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 class MemberNotificationFeed
 {
     private const NOTIFICATION_TYPE = 'member_dashboard';
+
     private const BROADCAST_CHUNK_SIZE = 500;
 
     public function recordActivity(
@@ -38,11 +39,7 @@ class MemberNotificationFeed
     {
         $sent = 0;
 
-        User::query()
-            ->select('id')
-            ->where('is_active', true)
-            ->whereHas('roles', fn (Builder $query): Builder => $query->where('name', 'user'))
-            ->whereDoesntHave('roles', fn (Builder $query): Builder => $query->where('name', 'admin'))
+        $this->broadcastRecipientsQuery()
             ->orderBy('id')
             ->chunkById(self::BROADCAST_CHUNK_SIZE, function (Collection $users) use ($title, $body, $adminId, &$sent): void {
                 $now = now();
@@ -68,6 +65,20 @@ class MemberNotificationFeed
             });
 
         return $sent;
+    }
+
+    public function countBroadcastRecipients(): int
+    {
+        return $this->broadcastRecipientsQuery()->count();
+    }
+
+    private function broadcastRecipientsQuery(): Builder
+    {
+        return User::query()
+            ->select('id')
+            ->where('is_active', true)
+            ->whereHas('roles', fn (Builder $query): Builder => $query->where('name', 'user'))
+            ->whereDoesntHave('roles', fn (Builder $query): Builder => $query->where('name', 'admin'));
     }
 
     private function notificationRow(

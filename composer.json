@@ -13,6 +13,7 @@
     "require": {
         "php": "^8.2",
         "codeat3/blade-simple-icons": "^8.12",
+        "ezyang/htmlpurifier": "^4.18",
         "filament/filament": "^3.3",
         "laravel/fortify": "^1.37",
         "laravel/framework": "^11.31",

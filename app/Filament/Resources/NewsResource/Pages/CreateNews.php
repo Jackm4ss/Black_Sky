@@ -10,6 +10,8 @@ class CreateNews extends CreateRecord
 {
     protected static string $resource = NewsResource::class;
 
+    protected static bool $canCreateAnother = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data = NewsResource::normalizeFormData($data);

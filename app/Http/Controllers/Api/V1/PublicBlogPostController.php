@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\BlogTag;
+use App\Support\RichContentSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PublicBlogPostController extends Controller
 {
+    public function __construct(private readonly RichContentSanitizer $contentSanitizer) {}
+
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 9), 1), 18);
@@ -112,7 +115,7 @@ class PublicBlogPostController extends Controller
         return response()->json([
             'data' => [
                 ...$this->postSummary($post),
-                'content' => $post->content,
+                'content' => $this->contentSanitizer->clean($post->content),
                 'meta_title' => $post->seo_title,
                 'meta_description' => $post->seo_description,
                 'meta_keywords' => $post->meta_keywords,
@@ -164,7 +167,7 @@ class PublicBlogPostController extends Controller
         $canonicalUrl = $post->canonical_url;
 
         if (! $canonicalUrl || str_contains($canonicalUrl, '/blog/')) {
-            return url('/news/' . $post->slug);
+            return url('/news/'.$post->slug);
         }
 
         return $canonicalUrl;

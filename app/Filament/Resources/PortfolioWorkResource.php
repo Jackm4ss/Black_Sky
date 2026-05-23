@@ -4,15 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PortfolioWorkResource\Pages;
 use App\Models\PortfolioWork;
+use App\Support\ImageCompressionOptions;
+use App\Support\SafeImageCompressor;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class PortfolioWorkResource extends Resource
 {
@@ -20,9 +20,15 @@ class PortfolioWorkResource extends Resource
 
     private const FEATURED_IMAGE_QUALITY = 82;
 
+    private const FEATURED_IMAGE_MAX_PIXELS = 50000000;
+
     private const GALLERY_IMAGE_MAX_EDGE = 1400;
 
     private const GALLERY_IMAGE_QUALITY = 84;
+
+    private const GALLERY_IMAGE_MAX_PIXELS = 50000000;
+
+    private const IMAGE_UPLOAD_MAX_KB = 102400;
 
     protected static ?string $model = PortfolioWork::class;
 
@@ -45,7 +51,7 @@ class PortfolioWorkResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Project')
-                    ->description('Add project details for the public portfolio.')
+                    ->description('Add the project story shown on the website.')
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->required()
@@ -120,7 +126,7 @@ class PortfolioWorkResource extends Resource
                         Forms\Components\Placeholder::make('current_featured_image')
                             ->label('Current featured image')
                             ->content(fn (?PortfolioWork $record): HtmlString|string => filled($record?->featured_image_url)
-                                ? new HtmlString('<a class="bsa-current-media-link" href="' . e($record->featured_image_url) . '" target="_blank" rel="noopener">View current image</a>')
+                                ? new HtmlString('<a class="bsa-current-media-link" href="'.e($record->featured_image_url).'" target="_blank" rel="noopener">View current image</a>')
                                 : 'No featured image uploaded yet.')
                             ->visible(fn (?PortfolioWork $record): bool => filled($record?->featured_image))
                             ->columnSpanFull(),
@@ -132,15 +138,22 @@ class PortfolioWorkResource extends Resource
                             ->imageResizeTargetWidth('1600')
                             ->imageResizeTargetHeight('900')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                            ->maxSize(self::IMAGE_UPLOAD_MAX_KB)
                             ->disk('public')
                             ->directory('portfolio')
                             ->visibility('public')
                             ->required(fn (string $operation): bool => $operation === 'create')
+                            ->placeholder('Drop the project image here or browse')
+                            ->helperText('Choose the main image shown with this project. The preview appears when the image is ready.')
+                            ->uploadingMessage('Preparing image...')
+                            ->uploadButtonPosition('right bottom')
+                            ->uploadProgressIndicatorPosition('right bottom')
+                            ->removeUploadedFileButtonPosition('left bottom')
                             ->columnSpanFull(),
                         Forms\Components\Placeholder::make('current_gallery_images')
                             ->label('Current gallery')
                             ->content(fn (?PortfolioWork $record): string => filled($record?->gallery_image_urls)
-                                ? count($record->gallery_image_urls) . ' image(s) currently published. Uploading new gallery images replaces them.'
+                                ? count($record->gallery_image_urls).' gallery image(s) published. Choosing new images will refresh the gallery.'
                                 : 'No gallery images uploaded yet.')
                             ->visible(fn (?PortfolioWork $record): bool => filled($record?->gallery_images))
                             ->columnSpanFull(),
@@ -155,9 +168,16 @@ class PortfolioWorkResource extends Resource
                             ->imageResizeTargetWidth('1400')
                             ->imageResizeTargetHeight('900')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                            ->maxSize(self::IMAGE_UPLOAD_MAX_KB)
                             ->disk('public')
                             ->directory('portfolio/gallery')
                             ->visibility('public')
+                            ->placeholder('Drop project photos here or browse')
+                            ->helperText('Add optional project photos for the detail page. The preview appears when images are ready.')
+                            ->uploadingMessage('Preparing images...')
+                            ->uploadButtonPosition('right bottom')
+                            ->uploadProgressIndicatorPosition('right bottom')
+                            ->removeUploadedFileButtonPosition('left bottom')
                             ->columnSpanFull(),
                     ]),
 
@@ -257,14 +277,19 @@ class PortfolioWorkResource extends Resource
         }
 
         if (filled($data['featured_image_upload'] ?? null)) {
-            $data['featured_image'] = self::compressPublicImage(
-                path: (string) $data['featured_image_upload'],
-                slug: (string) $data['slug'],
-                directory: 'portfolio',
-                maxEdge: self::FEATURED_IMAGE_MAX_EDGE,
-                quality: self::FEATURED_IMAGE_QUALITY,
-                field: 'featured_image_upload',
-                label: 'featured image',
+            $data['featured_image'] = app(SafeImageCompressor::class)->storePublicDiskPath(
+                (string) $data['featured_image_upload'],
+                new ImageCompressionOptions(
+                    directory: 'portfolio',
+                    filenamePrefix: (string) $data['slug'],
+                    errorField: 'featured_image_upload',
+                    label: 'featured image',
+                    maxEdge: self::FEATURED_IMAGE_MAX_EDGE,
+                    quality: self::FEATURED_IMAGE_QUALITY,
+                    maxPixels: self::FEATURED_IMAGE_MAX_PIXELS,
+                    deleteSource: true,
+                    timeLimitSeconds: 120,
+                ),
             );
 
             self::deletePublicImage($record?->featured_image, 'portfolio/');
@@ -277,14 +302,19 @@ class PortfolioWorkResource extends Resource
 
             if ($galleryImages !== []) {
                 $data['gallery_images'] = collect($galleryImages)
-                    ->map(fn (string $path): string => self::compressPublicImage(
-                        path: $path,
-                        slug: (string) $data['slug'],
-                        directory: 'portfolio/gallery',
-                        maxEdge: self::GALLERY_IMAGE_MAX_EDGE,
-                        quality: self::GALLERY_IMAGE_QUALITY,
-                        field: 'gallery_image_uploads',
-                        label: 'gallery image',
+                    ->map(fn (string $path): string => app(SafeImageCompressor::class)->storePublicDiskPath(
+                        $path,
+                        new ImageCompressionOptions(
+                            directory: 'portfolio/gallery',
+                            filenamePrefix: (string) $data['slug'],
+                            errorField: 'gallery_image_uploads',
+                            label: 'gallery image',
+                            maxEdge: self::GALLERY_IMAGE_MAX_EDGE,
+                            quality: self::GALLERY_IMAGE_QUALITY,
+                            maxPixels: self::GALLERY_IMAGE_MAX_PIXELS,
+                            deleteSource: true,
+                            timeLimitSeconds: 120,
+                        ),
                     ))
                     ->all();
 
@@ -306,11 +336,11 @@ class PortfolioWorkResource extends Resource
         }
 
         if (filled($data['slug'] ?? null)) {
-            $data['canonical_url'] = url('/portfolio/' . $data['slug']);
+            $data['canonical_url'] = url('/portfolio/'.$data['slug']);
         }
 
         if (filled($data['title'] ?? null)) {
-            $data['meta_title'] = Str::limit((string) $data['title'] . ' | Black Sky Portfolio', 60, '');
+            $data['meta_title'] = Str::limit((string) $data['title'].' | Black Sky Portfolio', 60, '');
         }
 
         $seoDescription = trim((string) ($data['excerpt'] ?? strip_tags((string) ($data['description'] ?? ''))));
@@ -337,99 +367,9 @@ class PortfolioWorkResource extends Resource
         return $data;
     }
 
-    private static function compressPublicImage(
-        string $path,
-        string $slug,
-        string $directory,
-        int $maxEdge,
-        int $quality,
-        string $field,
-        string $label,
-    ): string {
-        @ini_set('memory_limit', '1024M');
-        @set_time_limit(120);
-
-        $path = ltrim($path, '/');
-        $disk = Storage::disk('public');
-
-        if (! $disk->exists($path)) {
-            throw ValidationException::withMessages([
-                $field => 'The ' . $label . ' upload could not be found. Please upload it again.',
-            ]);
-        }
-
-        $sourcePath = $disk->path($path);
-        $imageInfo = @getimagesize($sourcePath);
-
-        if ($imageInfo === false) {
-            throw ValidationException::withMessages([
-                $field => 'The ' . $label . ' file could not be read as an image.',
-            ]);
-        }
-
-        [$sourceWidth, $sourceHeight, $imageType] = $imageInfo;
-        $source = match ($imageType) {
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($sourcePath),
-            IMAGETYPE_PNG => @imagecreatefrompng($sourcePath),
-            IMAGETYPE_WEBP => @imagecreatefromwebp($sourcePath),
-            IMAGETYPE_GIF => @imagecreatefromgif($sourcePath),
-            default => false,
-        };
-
-        if (! $source) {
-            throw ValidationException::withMessages([
-                $field => 'The ' . $label . ' format is not supported. Please upload JPG, PNG, WEBP, or GIF.',
-            ]);
-        }
-
-        $scale = min(1, $maxEdge / max($sourceWidth, $sourceHeight));
-        $targetWidth = max(1, (int) round($sourceWidth * $scale));
-        $targetHeight = max(1, (int) round($sourceHeight * $scale));
-        $target = imagecreatetruecolor($targetWidth, $targetHeight);
-
-        imagealphablending($target, false);
-        imagesavealpha($target, true);
-        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, imagecolorallocatealpha($target, 0, 0, 0, 127));
-        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
-
-        $safeSlug = Str::slug($slug) ?: 'portfolio-work';
-        $relativePath = trim($directory, '/') . '/' . $safeSlug . '-' . Str::uuid() . '.webp';
-
-        $disk->makeDirectory(trim($directory, '/'));
-
-        $stored = @imagewebp($target, $disk->path($relativePath), $quality);
-
-        imagedestroy($source);
-        imagedestroy($target);
-
-        if (! $stored) {
-            throw ValidationException::withMessages([
-                $field => 'The ' . $label . ' could not be compressed. Please try another image.',
-            ]);
-        }
-
-        self::deletePublicImage($path, trim($directory, '/') . '/');
-
-        return $relativePath;
-    }
-
     private static function deletePublicImage(?string $path, string $requiredPrefix): bool
     {
-        if (blank($path)) {
-            return false;
-        }
-
-        $path = (string) $path;
-
-        if (Str::startsWith($path, ['/storage/'])) {
-            $path = Str::after($path, '/storage/');
-        }
-
-        if (Str::startsWith($path, ['http://', 'https://', 'data:']) || ! Str::startsWith($path, $requiredPrefix)) {
-            return false;
-        }
-
-        return Storage::disk('public')->delete($path);
+        return app(SafeImageCompressor::class)->deletePublicPath($path, $requiredPrefix);
     }
 
     private static function makeUniqueSlug(string $value, ?PortfolioWork $record = null): string
@@ -444,7 +384,7 @@ class PortfolioWorkResource extends Resource
                 ->when($record, fn ($query) => $query->whereKeyNot($record->getKey()))
                 ->exists()
         ) {
-            $slug = $baseSlug . '-' . $suffix;
+            $slug = $baseSlug.'-'.$suffix;
             $suffix++;
         }
 

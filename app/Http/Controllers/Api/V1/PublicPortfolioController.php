@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\PortfolioWork;
+use App\Support\RichContentSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PublicPortfolioController extends Controller
 {
+    public function __construct(private readonly RichContentSanitizer $contentSanitizer) {}
+
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 8), 1), 18);
@@ -53,12 +56,12 @@ class PublicPortfolioController extends Controller
         return response()->json([
             'data' => [
                 ...$this->workSummary($work),
-                'description' => $work->description,
+                'description' => $this->contentSanitizer->clean($work->description),
                 'gallery_images' => $work->gallery_image_urls,
                 'meta_title' => $work->seo_title,
                 'meta_description' => $work->seo_description,
                 'meta_keywords' => $work->meta_keywords,
-                'canonical_url' => $work->canonical_url ?: url('/portfolio/' . $work->slug),
+                'canonical_url' => $work->canonical_url ?: url('/portfolio/'.$work->slug),
                 'og_image' => $work->og_image ? PortfolioWork::publicAssetUrl($work->og_image) : $work->featured_image_url,
             ],
         ]);

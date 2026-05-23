@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Jobs\BroadcastMemberNotification;
 use App\Support\MemberNotificationFeed;
 use Filament\Actions;
 use Filament\Forms;
@@ -17,7 +18,7 @@ class ListUsers extends ListRecords
 
     protected static string $view = 'filament.resources.list-records-shell';
 
-    public function getHeading(): string | Htmlable
+    public function getHeading(): string|Htmlable
     {
         return '';
     }
@@ -64,15 +65,17 @@ class ListUsers extends ListRecords
                         ->maxLength(500),
                 ])
                 ->action(function (array $data): void {
-                    $sent = app(MemberNotificationFeed::class)->broadcastToMembers(
+                    BroadcastMemberNotification::dispatch(
                         title: (string) $data['title'],
                         body: (string) $data['body'],
                         adminId: Auth::id(),
                     );
 
+                    $recipientCount = app(MemberNotificationFeed::class)->countBroadcastRecipients();
+
                     Notification::make()
-                        ->title('Broadcast sent')
-                        ->body($sent . ' active member' . ($sent === 1 ? '' : 's') . ' notified.')
+                        ->title('Broadcast queued')
+                        ->body($recipientCount.' active member'.($recipientCount === 1 ? '' : 's').' will be notified.')
                         ->success()
                         ->send();
                 }),

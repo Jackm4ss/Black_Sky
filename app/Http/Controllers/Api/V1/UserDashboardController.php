@@ -9,23 +9,28 @@ use App\Models\Bookmark;
 use App\Models\Event;
 use App\Models\SyncedTransaction;
 use App\Models\User;
+use App\Support\ImageCompressionOptions;
 use App\Support\MemberNotificationFeed;
+use App\Support\SafeImageCompressor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class UserDashboardController extends Controller
 {
     private const AVATAR_IMAGE_MAX_EDGE = 640;
+
     private const AVATAR_IMAGE_QUALITY = 84;
+
     private const AVATAR_IMAGE_MAX_PIXELS = 50000000;
-    private const AVATAR_UPLOAD_MAX_KILOBYTES = 204800;
+
+    private const AVATAR_UPLOAD_MAX_KILOBYTES = 51200;
+
     private const AVATAR_ALLOWED_MIME_TYPES = [
         'image/jpeg',
         'image/png',
@@ -33,9 +38,10 @@ class UserDashboardController extends Controller
         'image/gif',
     ];
 
-    public function __construct(private readonly MemberNotificationFeed $notificationFeed)
-    {
-    }
+    public function __construct(
+        private readonly MemberNotificationFeed $notificationFeed,
+        private readonly SafeImageCompressor $imageCompressor,
+    ) {}
 
     public function show(Request $request): JsonResponse
     {
@@ -127,8 +133,8 @@ class UserDashboardController extends Controller
                 'nullable',
                 'file',
                 'image',
-                'mimetypes:' . implode(',', self::AVATAR_ALLOWED_MIME_TYPES),
-                'max:' . self::AVATAR_UPLOAD_MAX_KILOBYTES,
+                'mimetypes:'.implode(',', self::AVATAR_ALLOWED_MIME_TYPES),
+                'max:'.self::AVATAR_UPLOAD_MAX_KILOBYTES,
             ],
             'email' => [
                 'required',
@@ -266,9 +272,9 @@ class UserDashboardController extends Controller
             $this->notificationFeed->recordActivity(
                 user: $user,
                 title: 'Event saved',
-                body: '"' . $event->title . '" was added to your saved events.',
+                body: '"'.$event->title.'" was added to your saved events.',
                 activityType: 'saved_event.created',
-                actionUrl: '/events/' . $event->slug,
+                actionUrl: '/events/'.$event->slug,
             );
         }
 
@@ -305,119 +311,25 @@ class UserDashboardController extends Controller
 
     private function storeCompressedAvatar(UploadedFile $upload, User $user): string
     {
-        @ini_set('memory_limit', '512M');
-        @set_time_limit(90);
-
-        if (! $upload->isValid()) {
-            throw ValidationException::withMessages([
-                'avatar' => 'The profile image upload did not complete.',
-            ]);
-        }
-
-        $sourcePath = $upload->getRealPath();
-        $reportedMimeType = (string) $upload->getMimeType();
-
-        if (! is_string($sourcePath) || ! is_file($sourcePath)) {
-            throw ValidationException::withMessages([
-                'avatar' => 'The profile image could not be read.',
-            ]);
-        }
-
-        if (! in_array($reportedMimeType, self::AVATAR_ALLOWED_MIME_TYPES, true)) {
-            throw ValidationException::withMessages([
-                'avatar' => 'Upload a JPG, PNG, WEBP, or GIF profile image.',
-            ]);
-        }
-
-        $imageInfo = @getimagesize($sourcePath);
-
-        if ($imageInfo === false) {
-            throw ValidationException::withMessages([
-                'avatar' => 'The profile image could not be read.',
-            ]);
-        }
-
-        [$sourceWidth, $sourceHeight, $imageType] = $imageInfo;
-        $detectedMimeType = (string) ($imageInfo['mime'] ?? '');
-        $sourcePixels = (int) $sourceWidth * (int) $sourceHeight;
-
-        if (
-            $sourceWidth < 1 ||
-            $sourceHeight < 1 ||
-            $sourcePixels > self::AVATAR_IMAGE_MAX_PIXELS ||
-            ! in_array($detectedMimeType, self::AVATAR_ALLOWED_MIME_TYPES, true)
-        ) {
-            throw ValidationException::withMessages([
-                'avatar' => 'Upload a JPG, PNG, WEBP, or GIF profile image under the supported resolution limit.',
-            ]);
-        }
-
-        $source = match ($imageType) {
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($sourcePath),
-            IMAGETYPE_PNG => @imagecreatefrompng($sourcePath),
-            IMAGETYPE_WEBP => @imagecreatefromwebp($sourcePath),
-            IMAGETYPE_GIF => @imagecreatefromgif($sourcePath),
-            default => false,
-        };
-
-        if (! $source) {
-            throw ValidationException::withMessages([
-                'avatar' => 'Upload a JPG, PNG, WEBP, or GIF profile image.',
-            ]);
-        }
-
-        $scale = min(1, self::AVATAR_IMAGE_MAX_EDGE / max($sourceWidth, $sourceHeight));
-        $targetWidth = max(1, (int) round($sourceWidth * $scale));
-        $targetHeight = max(1, (int) round($sourceHeight * $scale));
-        $target = imagecreatetruecolor($targetWidth, $targetHeight);
-
-        imagealphablending($target, false);
-        imagesavealpha($target, true);
-        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, imagecolorallocatealpha($target, 0, 0, 0, 127));
-        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
-
-        $relativeDirectory = 'profile-avatars/' . $user->id;
-        $relativePath = $relativeDirectory . '/' . Str::uuid() . '.webp';
-
-        Storage::disk('public')->makeDirectory($relativeDirectory);
-
-        $stored = @imagewebp($target, Storage::disk('public')->path($relativePath), self::AVATAR_IMAGE_QUALITY);
-
-        imagedestroy($source);
-        imagedestroy($target);
-
-        if (! $stored) {
-            throw ValidationException::withMessages([
-                'avatar' => 'The profile image could not be compressed.',
-            ]);
-        }
-
-        return Storage::disk('public')->url($relativePath);
+        return $this->imageCompressor->storeUploaded(
+            $upload,
+            new ImageCompressionOptions(
+                directory: 'profile-avatars/'.$user->id,
+                filenamePrefix: 'avatar',
+                errorField: 'avatar',
+                label: 'profile image',
+                maxEdge: self::AVATAR_IMAGE_MAX_EDGE,
+                quality: self::AVATAR_IMAGE_QUALITY,
+                maxPixels: self::AVATAR_IMAGE_MAX_PIXELS,
+                returnUrl: true,
+                allowedMimeTypes: self::AVATAR_ALLOWED_MIME_TYPES,
+            ),
+        );
     }
 
     private function deleteStoredAvatar(?string $avatarUrl): void
     {
-        if (blank($avatarUrl)) {
-            return;
-        }
-
-        $path = parse_url($avatarUrl, PHP_URL_PATH);
-
-        if (! is_string($path) || ! str_contains($path, '/storage/profile-avatars/')) {
-            return;
-        }
-
-        $relativePath = str_replace('\\', '/', Str::after($path, '/storage/'));
-
-        if (
-            ! Str::startsWith($relativePath, 'profile-avatars/') ||
-            str_contains($relativePath, '..') ||
-            str_contains($relativePath, "\0")
-        ) {
-            return;
-        }
-
-        Storage::disk('public')->delete($relativePath);
+        $this->imageCompressor->deletePublicPath($avatarUrl, 'profile-avatars/');
     }
 
     /**

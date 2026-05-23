@@ -6,6 +6,7 @@ import { Link, useParams } from "react-router";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
 import { getBlogPost } from "../blog/blog-api";
+import { sanitizeRichHtml } from "../lib/sanitize-rich-html";
 import "./BlogPage.css";
 
 const FALLBACK_IMAGE =
@@ -25,7 +26,7 @@ function RichArticleContent({ content }: { content: string }) {
   const normalized = content.trim();
 
   if (/<[a-z][\s\S]*>/i.test(normalized)) {
-    return <div dangerouslySetInnerHTML={{ __html: normalized }} />;
+    return <div dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(normalized) }} />;
   }
 
   return (

@@ -2231,6 +2231,33 @@
         text-transform: uppercase;
     }
 
+    .bsa-events-upload-help {
+        margin: 8px 0 0;
+        color: rgba(203, 213, 225, 0.72);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .bsa-events-upload-status {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0 0;
+        color: #93c5fd;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .bsa-events-upload-status svg {
+        width: 16px;
+        height: 16px;
+        animation: bsa-spin 0.8s linear infinite;
+    }
+
     .bsa-events-upload-preview {
         min-height: 112px;
         display: grid;
@@ -3112,6 +3139,19 @@
         background: var(--neo-blue) !important;
     }
 
+    .fi-resource-create-record-page .fi-fo-file-upload .filepond--file-status,
+    .fi-resource-edit-record-page .fi-fo-file-upload .filepond--file-status {
+        color: #fff !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+    }
+
+    .fi-resource-create-record-page .fi-fo-file-upload .filepond--file-status-sub,
+    .fi-resource-edit-record-page .fi-fo-file-upload .filepond--file-status-sub {
+        color: rgba(255, 255, 255, 0.78) !important;
+    }
+
     .fi-resource-create-record-page .fi-placeholder,
     .fi-resource-edit-record-page .fi-placeholder {
         color: var(--neo-dark-text) !important;
@@ -3222,6 +3262,12 @@
         background: var(--neo-dark-surface) !important;
         box-shadow: 10px 10px 0 var(--neo-purple) !important;
         color: var(--neo-dark-text) !important;
+    }
+
+    @keyframes bsa-spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     @media (max-width: 1180px) {

@@ -175,6 +175,7 @@ class AdminPanelAccessTest extends TestCase
             ->set('form.end_date', '2026-11-15')
             ->set('form.status', 'published')
             ->set('eventImage', UploadedFile::fake()->image('event-poster.jpg', 3840, 2160)->size(8192))
+            ->set('seatMapImage', UploadedFile::fake()->image('seat-map.jpg', 4096, 2160)->size(8192))
             ->set('form.accent_color', '#0EA5E9')
             ->call('saveEvent')
             ->assertSet('isFormOpen', false);
@@ -188,7 +189,13 @@ class AdminPanelAccessTest extends TestCase
         $event = Event::query()->where('slug', 'neon-test')->firstOrFail();
         $this->assertStringContainsString('/storage/events/neon-test-', $event->image_url);
         $this->assertStringEndsWith('.webp', $event->image_url);
-        Storage::disk('public')->assertExists(Str::after(parse_url($event->image_url, PHP_URL_PATH), '/storage/'));
+        $eventImagePath = Str::after(parse_url($event->image_url, PHP_URL_PATH), '/storage/');
+        $seatMapImagePath = Str::after(parse_url(
+            $event->sections()->where('section_key', 'seat_map_ticket_pricing')->value('image_url'),
+            PHP_URL_PATH
+        ), '/storage/');
+        Storage::disk('public')->assertExists($eventImagePath);
+        Storage::disk('public')->assertExists($seatMapImagePath);
 
         Livewire::test(ListEvents::class)
             ->call('openEdit', $event->id)
@@ -215,6 +222,8 @@ class AdminPanelAccessTest extends TestCase
         $this->assertDatabaseMissing('events', [
             'id' => $event->id,
         ]);
+        Storage::disk('public')->assertMissing($eventImagePath);
+        Storage::disk('public')->assertMissing($seatMapImagePath);
     }
 
     public function test_regular_user_cannot_access_filament_dashboard(): void

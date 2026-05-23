@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -17,6 +17,10 @@ import "./PortfolioDetailPage.css";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1600&q=82";
+
+function normalizeAccentColor(value?: string | null) {
+  return value && /^#[0-9A-Fa-f]{6}$/.test(value) ? value : "#f97316";
+}
 
 function RichPortfolioContent({ content }: { content: string }) {
   const normalized = content.trim();
@@ -62,6 +66,7 @@ export function PortfolioDetailPage() {
   });
   const work = workQuery.data;
   const heroImage = work?.featured_image ?? FALLBACK_IMAGE;
+  const accentColor = normalizeAccentColor(work?.accent_color);
   const gallery = work ? [heroImage, ...work.gallery_images].filter(Boolean).slice(0, 6) : [];
 
   useEffect(() => {
@@ -73,7 +78,7 @@ export function PortfolioDetailPage() {
   return (
     <>
       <Navbar />
-      <main className="portfolio-detail-page">
+      <main className="portfolio-detail-page" style={{ "--portfolio-accent": accentColor } as CSSProperties}>
         {workQuery.isLoading ? (
           <section className="portfolio-detail-empty">
             <ImageIcon aria-hidden="true" />
@@ -96,7 +101,7 @@ export function PortfolioDetailPage() {
                   Back to Portfolio
                 </Link>
                 <div className="portfolio-detail-kicker">
-                  <span style={{ color: work.accent_color }}>{work.category}</span>
+                  <span style={{ color: accentColor }}>{work.category}</span>
                   <span>{work.year}</span>
                 </div>
                 <h1>{work.title}</h1>
@@ -148,7 +153,7 @@ export function PortfolioDetailPage() {
               <div className="portfolio-detail-main">
                 <section className="portfolio-detail-section">
                   <div className="portfolio-detail-section__head">
-                    <span style={{ color: work.accent_color }}>Overview</span>
+                    <span style={{ color: accentColor }}>Overview</span>
                     <h2>About the Project</h2>
                   </div>
                   <div className="portfolio-detail-copy">
@@ -158,7 +163,7 @@ export function PortfolioDetailPage() {
 
                 <section className="portfolio-detail-section">
                   <div className="portfolio-detail-section__head">
-                    <span style={{ color: work.accent_color }}>Gallery</span>
+                    <span style={{ color: accentColor }}>Gallery</span>
                     <h2>Production Frames</h2>
                   </div>
                   <div className="portfolio-detail-gallery">

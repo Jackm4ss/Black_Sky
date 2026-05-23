@@ -43,10 +43,8 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function normalizeGlowColor(value: string | null | undefined, accentColor: string) {
-  const glowColor = value?.trim();
-
-  return glowColor || hexToRgba(accentColor, 0.45);
+function glowFromAccent(accentColor: string) {
+  return hexToRgba(accentColor, 0.45);
 }
 
 function getContrastText(hex: string) {
@@ -76,7 +74,7 @@ export function mapPublicEventToSlide(event: PublicEvent): EventSlide {
     city: event.city,
     tag: event.genre,
     accentColor,
-    glowColor: normalizeGlowColor(event.glow_color, accentColor),
+    glowColor: glowFromAccent(accentColor),
     image: event.image_url ?? FALLBACK_EVENT_IMAGE,
     vendorUrl: event.vendor_url,
     soldOut: event.status === "sold_out",
@@ -394,8 +392,8 @@ export function EventsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const x = useMotionValue(0);
   const { data, isError, isLoading } = useQuery({
-    queryKey: ["landing-events", "upcoming"],
-    queryFn: () => getPublicEvents({ timeframe: "upcoming", availability: "all", perPage: 8 }),
+    queryKey: ["landing-events", "upcoming", "latest"],
+    queryFn: () => getPublicEvents({ timeframe: "upcoming", availability: "all", sort: "latest", perPage: 8 }),
     staleTime: 60_000,
   });
 

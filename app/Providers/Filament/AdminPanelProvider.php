@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Auth\Login as AdminLogin;
+use App\Filament\Pages\Events\CreateEvent;
+use App\Filament\Pages\Events\EditEvent;
 use App\Filament\Pages\Events\ListEvents;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -52,6 +54,8 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
                 ListEvents::class,
+                CreateEvent::class,
+                EditEvent::class,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->middleware([

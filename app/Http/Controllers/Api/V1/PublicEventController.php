@@ -15,6 +15,7 @@ class PublicEventController extends Controller
         $perPage = min(max((int) $request->integer('per_page', 12), 1), 24);
         $timeframe = $request->string('timeframe')->toString();
         $availability = $request->string('availability')->toString();
+        $sort = $request->string('sort')->toString();
         $today = now()->toDateString();
 
         $baseQuery = $this->publishedEventsQuery();
@@ -39,6 +40,7 @@ class PublicEventController extends Controller
                 'accent_color',
                 'glow_color',
                 'vendor_url',
+                'created_at',
             ])
             ->search((string) $request->string('search'))
             ->when($request->filled('city'), fn ($query) => $query->where('city', (string) $request->string('city')))
@@ -50,10 +52,19 @@ class PublicEventController extends Controller
             ->startingFrom((string) $request->string('date_from'))
             ->startingUntil((string) $request->string('date_to'));
 
-        $events = ($timeframe === 'past'
-            ? $eventsQuery->orderByDesc('start_date')->orderByDesc('id')
-            : $eventsQuery->orderBy('start_date')->orderBy('id'))
-            ->cursorPaginate($perPage);
+        $orderedEventsQuery = match (true) {
+            $sort === 'latest' => $eventsQuery
+                ->orderByDesc('created_at')
+                ->orderByDesc('id'),
+            $timeframe === 'past' => $eventsQuery
+                ->orderByDesc('start_date')
+                ->orderByDesc('id'),
+            default => $eventsQuery
+                ->orderBy('start_date')
+                ->orderBy('id'),
+        };
+
+        $events = $orderedEventsQuery->cursorPaginate($perPage);
 
         return response()->json([
             'data' => $events->getCollection()->map(fn (Event $event): array => $this->eventSummary($event))->values(),
@@ -82,7 +93,7 @@ class PublicEventController extends Controller
     {
         $event = $this->publishedEventsQuery()
             ->with([
-                'enabledSections:id,event_id,section_key,title,content,sort_order',
+                'enabledSections:id,event_id,section_key,title,content,image_url,sort_order',
             ])
             ->where('slug', $slug)
             ->firstOrFail();
@@ -100,6 +111,7 @@ class PublicEventController extends Controller
                         'section_key' => $section->section_key,
                         'title' => $section->title,
                         'content' => $section->content,
+                        'image_url' => $section->image_url,
                     ])
                     ->values(),
                 'meta_title' => $event->meta_title ?: $event->title . ' | Black Sky Enterprise',

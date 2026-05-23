@@ -50,17 +50,24 @@ class PortfolioWorkResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('category')
+                        Forms\Components\Select::make('category')
                             ->required()
-                            ->maxLength(100)
-                            ->datalist([
+                            ->native(false)
+                            ->suffixIcon('heroicon-m-chevron-down')
+                            ->options(fn (): array => collect([
                                 'Arena Concert',
                                 'Arena Tour',
                                 'Concert Production',
                                 'Music Festival',
                                 'Media Production',
                                 'Brand Partnership',
-                            ]),
+                            ])
+                                ->merge(PortfolioWork::query()->select('category')->distinct()->pluck('category'))
+                                ->filter()
+                                ->unique()
+                                ->mapWithKeys(fn (string $category): array => [$category => $category])
+                                ->all())
+                            ->searchable(),
                         Forms\Components\TextInput::make('year')
                             ->required()
                             ->maxLength(20),
@@ -72,8 +79,11 @@ class PortfolioWorkResource extends Resource
                         Forms\Components\TextInput::make('attendance')
                             ->maxLength(120),
                         Forms\Components\ColorPicker::make('accent_color')
+                            ->label('Accent color')
                             ->required()
-                            ->default('#f97316'),
+                            ->default('#f97316')
+                            ->helperText('Used for portfolio card glow and detail page highlights.')
+                            ->columnSpanFull(),
                         Forms\Components\Textarea::make('excerpt')
                             ->required()
                             ->rows(3)
@@ -152,6 +162,8 @@ class PortfolioWorkResource extends Resource
                                 'archived' => 'Archived',
                             ])
                             ->required()
+                            ->native(false)
+                            ->suffixIcon('heroicon-m-chevron-down')
                             ->default('draft'),
                         Forms\Components\DateTimePicker::make('published_at')
                             ->seconds(false),
@@ -160,43 +172,6 @@ class PortfolioWorkResource extends Resource
                             ->default(0),
                     ])
                     ->columns(3),
-
-                Forms\Components\Section::make('SEO')
-                    ->description('PRD requires SEO metadata on public detail pages.')
-                    ->schema([
-                        Forms\Components\TextInput::make('meta_title')
-                            ->maxLength(60),
-                        Forms\Components\TextInput::make('meta_keywords')
-                            ->maxLength(255),
-                        Forms\Components\Textarea::make('meta_description')
-                            ->maxLength(160)
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('canonical_url')
-                            ->url()
-                            ->maxLength(255),
-                        Forms\Components\Placeholder::make('current_og_image')
-                            ->label('Current Open Graph image')
-                            ->content(fn (?PortfolioWork $record): HtmlString|string => filled($record?->og_image)
-                                ? new HtmlString('<a class="bsa-current-media-link" href="' . e(PortfolioWork::publicAssetUrl($record->og_image)) . '" target="_blank" rel="noopener">View current share image</a>')
-                                : 'No Open Graph image set yet.')
-                            ->visible(fn (?PortfolioWork $record): bool => filled($record?->og_image))
-                            ->columnSpanFull(),
-                        Forms\Components\FileUpload::make('og_image_upload')
-                            ->label('Open Graph image')
-                            ->image()
-                            ->imageEditor()
-                            ->imageResizeMode('cover')
-                            ->imageResizeTargetWidth('1200')
-                            ->imageResizeTargetHeight('630')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->disk('public')
-                            ->directory('portfolio/og')
-                            ->visibility('public')
-                            ->helperText('Optional. Leave empty to reuse the featured image.'),
-                    ])
-                    ->columns(2)
-                    ->collapsed(),
             ]);
     }
 
@@ -220,7 +195,7 @@ class PortfolioWorkResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('location')
                     ->searchable()
-                    ->toggleable(),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -229,10 +204,6 @@ class PortfolioWorkResource extends Resource
                         default => 'info',
                     })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime('M d, Y')
                     ->sortable(),
@@ -263,7 +234,7 @@ class PortfolioWorkResource extends Resource
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    public static function normalizeFormData(array $data): array
+    public static function normalizeFormData(array $data, ?PortfolioWork $record = null): array
     {
         if (filled($data['featured_image_upload'] ?? null)) {
             $data['featured_image'] = $data['featured_image_upload'];
@@ -281,12 +252,6 @@ class PortfolioWorkResource extends Resource
 
         unset($data['gallery_image_uploads']);
 
-        if (filled($data['og_image_upload'] ?? null)) {
-            $data['og_image'] = $data['og_image_upload'];
-        }
-
-        unset($data['og_image_upload']);
-
         if (blank($data['slug'] ?? null) && filled($data['title'] ?? null)) {
             $data['slug'] = Str::slug((string) $data['title']);
         }
@@ -295,16 +260,39 @@ class PortfolioWorkResource extends Resource
             $data['published_at'] = now();
         }
 
-        if (blank($data['canonical_url'] ?? null) && filled($data['slug'] ?? null)) {
+        $featuredImage = $data['featured_image'] ?? $record?->featured_image;
+
+        if (filled($featuredImage)) {
+            $data['og_image'] = $featuredImage;
+        }
+
+        if (filled($data['slug'] ?? null)) {
             $data['canonical_url'] = url('/portfolio/' . $data['slug']);
         }
 
-        if (blank($data['meta_title'] ?? null) && filled($data['title'] ?? null)) {
+        if (filled($data['title'] ?? null)) {
             $data['meta_title'] = Str::limit((string) $data['title'] . ' | Black Sky Portfolio', 60, '');
         }
 
-        if (blank($data['meta_description'] ?? null) && filled($data['excerpt'] ?? null)) {
-            $data['meta_description'] = Str::limit((string) $data['excerpt'], 160, '');
+        $seoDescription = trim((string) ($data['excerpt'] ?? strip_tags((string) ($data['description'] ?? ''))));
+
+        if ($seoDescription !== '') {
+            $data['meta_description'] = Str::limit($seoDescription, 160, '');
+        }
+
+        $keywords = collect([
+            $data['title'] ?? null,
+            $data['category'] ?? null,
+            $data['location'] ?? null,
+            'Black Sky portfolio',
+        ])
+            ->filter(fn (mixed $value): bool => filled($value))
+            ->map(fn (mixed $value): string => trim((string) $value))
+            ->unique()
+            ->implode(', ');
+
+        if ($keywords !== '') {
+            $data['meta_keywords'] = Str::limit($keywords, 255, '');
         }
 
         return $data;

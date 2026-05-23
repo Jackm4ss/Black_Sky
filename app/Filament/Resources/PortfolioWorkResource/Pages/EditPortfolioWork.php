@@ -12,12 +12,19 @@ class EditPortfolioWork extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return PortfolioWorkResource::normalizeFormData($data);
+        return PortfolioWorkResource::normalizeFormData($data, $this->record);
     }
 
     protected function getHeaderActions(): array
     {
+        return [];
+    }
+
+    protected function getFormActions(): array
+    {
         return [
+            $this->getSaveFormAction(),
+            $this->getCancelFormAction(),
             Actions\DeleteAction::make(),
         ];
     }

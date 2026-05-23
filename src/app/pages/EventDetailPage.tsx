@@ -29,7 +29,31 @@ import "./EventDetailPage.css";
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1600&q=82";
 
-type DetailSection = Pick<PublicEventSection, "section_key" | "title" | "content">;
+const SEAT_MAP_FALLBACK_COPY =
+  "Seat map and event guide will be updated closer to the event day. Please stay tuned to our page for the latest updates.";
+
+const STATIC_IMPORTANT_INFORMATION =
+  "- Ticket purchases, payment confirmation, refunds, and ticket validity are handled by the official ticketing vendor.\n- Entry requirements, venue rules, seating changes, and event updates follow the vendor or venue policy.\n- Please review the vendor checkout page and event terms before completing your purchase.";
+
+type DetailSection = Pick<PublicEventSection, "section_key" | "title" | "content" | "image_url">;
+
+const DETAIL_SECTION_ORDER = [
+  "about",
+  "event_details",
+  "location",
+  "seat_map_ticket_pricing",
+  "ticket_pricing",
+  "important_information",
+];
+
+const DETAIL_SECTION_TITLES: Record<string, string> = {
+  about: "About",
+  event_details: "Event Details",
+  location: "Location",
+  seat_map_ticket_pricing: "Seat Map & Ticket Pricing",
+  ticket_pricing: "Ticket Pricing",
+  important_information: "Important Information",
+};
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -69,6 +93,20 @@ function mapsHref(event: PublicEventDetail) {
   )}`;
 }
 
+function safeExternalUrl(value: string | null | undefined) {
+  if (!value?.trim()) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value.trim());
+
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 function renderContent(content: string | null) {
   const blocks = (content ?? "")
     .split(/\n{2,}/)
@@ -99,37 +137,107 @@ function renderContent(content: string | null) {
 }
 
 function buildSections(event: PublicEventDetail): DetailSection[] {
-  const userSections = event.sections.filter((section) => section.content?.trim());
-  const existingKeys = new Set(userSections.map((section) => section.section_key));
-  const generated: DetailSection[] = [];
+  const userSections = event.sections
+    .filter((section) => section.content?.trim() || section.image_url)
+    .flatMap((section) => {
+      if (section.section_key === "ticket_pricing" && section.image_url) {
+        const sections: DetailSection[] = [
+          {
+            ...section,
+            section_key: "seat_map_ticket_pricing",
+            title: DETAIL_SECTION_TITLES.seat_map_ticket_pricing,
+            content: "",
+          },
+        ];
 
-  if (!existingKeys.has("about")) {
-    generated.push({
+        if (section.content?.trim()) {
+          sections.push({
+            ...section,
+            title: DETAIL_SECTION_TITLES.ticket_pricing,
+            image_url: null,
+          });
+        }
+
+        return sections;
+      }
+
+      return [
+        {
+          ...section,
+          title: DETAIL_SECTION_TITLES[section.section_key] ?? section.title,
+          content:
+            section.section_key === "important_information"
+              ? STATIC_IMPORTANT_INFORMATION
+              : section.content,
+        },
+      ];
+    });
+  const sectionsByKey = new Map<string, DetailSection>(
+    userSections.map((section) => [section.section_key, section] as [string, DetailSection]),
+  );
+
+  if (!sectionsByKey.has("about")) {
+    sectionsByKey.set("about", {
       section_key: "about",
       title: "About",
       content:
         event.subtitle ??
         `${event.title} is a Black Sky Enterprise live event curated for fans across Southeast Asia.`,
+      image_url: null,
     });
   }
 
-  if (!existingKeys.has("event_details")) {
-    generated.push({
+  if (!sectionsByKey.has("event_details")) {
+    sectionsByKey.set("event_details", {
       section_key: "event_details",
       title: "Event Details",
       content: "",
+      image_url: null,
     });
   }
 
-  if (!existingKeys.has("location")) {
-    generated.push({
+  if (!sectionsByKey.has("location")) {
+    sectionsByKey.set("location", {
       section_key: "location",
       title: "Location",
       content: "",
+      image_url: null,
     });
   }
 
-  return [...generated, ...userSections];
+  if (!sectionsByKey.has("seat_map_ticket_pricing")) {
+    sectionsByKey.set("seat_map_ticket_pricing", {
+      section_key: "seat_map_ticket_pricing",
+      title: "Seat Map & Ticket Pricing",
+      content: "",
+      image_url: null,
+    });
+  }
+
+  if (!sectionsByKey.has("ticket_pricing")) {
+    sectionsByKey.set("ticket_pricing", {
+      section_key: "ticket_pricing",
+      title: "Ticket Pricing",
+      content: "",
+      image_url: null,
+    });
+  }
+
+  if (!sectionsByKey.has("important_information")) {
+    sectionsByKey.set("important_information", {
+      section_key: "important_information",
+      title: "Important Information",
+      content: STATIC_IMPORTANT_INFORMATION,
+      image_url: null,
+    });
+  }
+
+  const orderedSections = DETAIL_SECTION_ORDER
+    .map((key) => sectionsByKey.get(key))
+    .filter((section): section is DetailSection => Boolean(section));
+  const extraSections = userSections.filter((section) => !DETAIL_SECTION_ORDER.includes(section.section_key));
+
+  return [...orderedSections, ...extraSections];
 }
 
 function EventSpotifyPreview({ event }: { event: PublicEventDetail }) {
@@ -187,7 +295,9 @@ function EventDetailsBlock({ event }: { event: PublicEventDetail }) {
   );
 }
 
-function EventLocationBlock({ event }: { event: PublicEventDetail }) {
+function EventLocationBlock({ event, mapsUrl }: { event: PublicEventDetail; mapsUrl?: string | null }) {
+  const href = safeExternalUrl(mapsUrl) ?? mapsHref(event);
+
   return (
     <div className="event-detail-location-card">
       <MapPinned aria-hidden="true" />
@@ -198,7 +308,7 @@ function EventLocationBlock({ event }: { event: PublicEventDetail }) {
           {event.city}, {countryName(event.country_code)}
         </p>
       </div>
-      <a href={mapsHref(event)} target="_blank" rel="noreferrer">
+      <a href={href} target="_blank" rel="noreferrer">
         Get Directions
         <ExternalLink aria-hidden="true" />
       </a>
@@ -226,10 +336,22 @@ function EventSectionContent({
 
   if (section.section_key === "location") {
     return (
-      <>
-        <EventLocationBlock event={event} />
-        {hasContent ? <div className="event-detail-section__rich-text">{renderContent(section.content)}</div> : null}
-      </>
+      <EventLocationBlock event={event} mapsUrl={section.content} />
+    );
+  }
+
+  if (section.section_key === "seat_map_ticket_pricing") {
+    return (
+      <div className="event-detail-ticketing-copy">
+        <ListMusic aria-hidden="true" />
+        <div>
+          {section.image_url ? (
+            <img className="event-detail-seat-map" src={section.image_url} alt={`${event.title} seat map`} />
+          ) : (
+            <p className="event-detail-seat-map-fallback">{SEAT_MAP_FALLBACK_COPY}</p>
+          )}
+        </div>
+      </div>
     );
   }
 
@@ -237,7 +359,7 @@ function EventSectionContent({
     return (
       <div className="event-detail-ticketing-copy">
         <ListMusic aria-hidden="true" />
-        <div>{renderContent(section.content)}</div>
+        <div>{hasContent ? renderContent(section.content) : <p>Ticket pricing will be announced closer to ticket launch.</p>}</div>
       </div>
     );
   }

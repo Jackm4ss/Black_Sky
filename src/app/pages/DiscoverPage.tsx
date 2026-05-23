@@ -339,7 +339,7 @@ export function DiscoverPage() {
     dateTo,
     timeframe,
     availability,
-    perPage: 10,
+    perPage: 24,
   };
 
   const eventsQuery = useInfiniteQuery({

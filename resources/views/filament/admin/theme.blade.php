@@ -1591,6 +1591,7 @@
         gap: 8px;
         padding-inline: 14px;
         color: #fff;
+        text-decoration: none;
     }
 
     .bsa-events-add,
@@ -1659,6 +1660,27 @@
         font-weight: 600;
         letter-spacing: 0;
         text-transform: none;
+    }
+
+    .bsa-events-field select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 42px;
+        background-color: var(--neo-dark-elevated);
+        background-image:
+            linear-gradient(45deg, transparent 50%, var(--neo-dark-text) 50%),
+            linear-gradient(135deg, var(--neo-dark-text) 50%, transparent 50%),
+            linear-gradient(to right, rgba(203, 213, 225, 0.18), rgba(203, 213, 225, 0.18));
+        background-position:
+            calc(100% - 19px) 52%,
+            calc(100% - 13px) 52%,
+            calc(100% - 35px) 50%;
+        background-repeat: no-repeat;
+        background-size: 6px 6px, 6px 6px, 1px 20px;
+    }
+
+    .bsa-events-field select::-ms-expand {
+        display: none;
     }
 
     .bsa-events-field textarea {
@@ -1962,29 +1984,59 @@
 
     .bsa-events-form {
         display: grid;
-        gap: 22px;
+        gap: 18px;
         padding: 22px 24px 24px;
     }
 
-    .bsa-events-form-intro {
-        display: grid;
-        gap: 5px;
-        border: 2px dashed rgba(203, 213, 225, 0.32);
-        background: rgba(14, 165, 233, 0.08);
-        padding: 14px 16px;
+    .bsa-events-form-page .bsa-events-hero {
+        align-items: end;
     }
 
-    .bsa-events-form-intro strong {
+    .bsa-events-form-card {
+        overflow: visible;
+    }
+
+    .bsa-events-back-link {
+        min-width: 118px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .bsa-events-back-link svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .bsa-events-form-panel {
+        display: grid;
+        gap: 16px;
+        border: 2px solid rgba(203, 213, 225, 0.18);
+        background: rgba(11, 22, 38, 0.68);
+        padding: 16px;
+    }
+
+    .bsa-events-form-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        border-bottom: 1px solid rgba(203, 213, 225, 0.16);
+        padding-bottom: 12px;
+    }
+
+    .bsa-events-form-panel-head span {
         color: #fff;
         font-family: 'Barlow Condensed', sans-serif;
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 900;
-        letter-spacing: 0;
+        letter-spacing: 0.12em;
         line-height: 1;
         text-transform: uppercase;
     }
 
-    .bsa-events-form-intro span,
     .bsa-events-advanced summary small,
     .bsa-events-upload-preview span {
         color: var(--neo-dark-muted);
@@ -2079,6 +2131,11 @@
         display: grid;
         gap: 14px;
         padding: 0 16px;
+    }
+
+    .bsa-events-detail-grid {
+        display: grid;
+        gap: 14px;
     }
 
     .bsa-events-section-add {
@@ -2238,10 +2295,14 @@
     }
 
     .bsa-events-modal-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         min-height: 38px;
         padding-inline: 14px;
         background: var(--neo-dark-elevated);
         color: #fff;
+        text-decoration: none;
     }
 
     .bsa-events-modal-danger {
@@ -3107,11 +3168,6 @@
 
         .bsa-events-upload {
             grid-template-columns: 1fr;
-        }
-
-        .bsa-events-advanced summary {
-            align-items: flex-start;
-            flex-direction: column;
         }
 
         .bsa-events-modal-footer {

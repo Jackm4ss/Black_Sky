@@ -10,6 +10,8 @@ class CreatePortfolioWork extends CreateRecord
 {
     protected static string $resource = PortfolioWorkResource::class;
 
+    protected static bool $canCreateAnother = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data = PortfolioWorkResource::normalizeFormData($data);

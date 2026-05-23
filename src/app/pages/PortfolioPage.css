@@ -1,0 +1,323 @@
+.portfolio-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 4%, rgba(14, 165, 233, 0.16), transparent 32%),
+    radial-gradient(circle at 88% 18%, rgba(249, 115, 22, 0.12), transparent 30%),
+    #050505;
+  color: #fff;
+  padding: 96px clamp(20px, 5vw, 72px) 96px;
+}
+
+.portfolio-page-hero,
+.portfolio-page-grid,
+.portfolio-page-load,
+.portfolio-page-state {
+  width: min(100%, 1216px);
+  margin-inline: auto;
+}
+
+.portfolio-page-hero {
+  margin-bottom: 82px;
+}
+
+.portfolio-page-hero p,
+.portfolio-page-card__top,
+.portfolio-page-card dt,
+.portfolio-page-load button,
+.portfolio-page-state strong {
+  font-family: "Barlow Condensed", sans-serif;
+  text-transform: uppercase;
+}
+
+.portfolio-page-hero p {
+  margin: 0 0 14px;
+  color: #f97316;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+}
+
+.portfolio-page-hero h1 {
+  max-width: 780px;
+  margin: 0;
+  color: #fff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(3.65rem, 5.7vw, 6rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.portfolio-page-hero div > span {
+  display: block;
+  max-width: 720px;
+  margin-top: 22px;
+  color: rgba(255, 255, 255, 0.68);
+  font-family: "Barlow", sans-serif;
+  font-size: clamp(1rem, 1.7vw, 1.18rem);
+  font-weight: 300;
+  line-height: 1.65;
+}
+
+.portfolio-page-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 48px;
+}
+
+.portfolio-page-card {
+  --project-accent: #f97316;
+  min-height: 600px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background: #121212;
+  isolation: isolate;
+}
+
+.portfolio-page-card__link,
+.portfolio-page-card__image,
+.portfolio-page-card__shade,
+.portfolio-page-card__accent {
+  position: absolute;
+  inset: 0;
+}
+
+.portfolio-page-card__link {
+  z-index: 8;
+}
+
+.portfolio-page-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+  transform: scale(1.001);
+  transition: opacity 700ms ease, transform 800ms ease;
+}
+
+.portfolio-page-card__shade {
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(5, 5, 5, 0.05), rgba(5, 5, 5, 0.34) 42%, rgba(5, 5, 5, 0.95)),
+    linear-gradient(135deg, rgba(5, 5, 5, 0.78), transparent 46%);
+}
+
+.portfolio-page-card__accent {
+  z-index: 2;
+  background: radial-gradient(circle at 16% 88%, color-mix(in srgb, var(--project-accent) 34%, transparent), transparent 48%);
+  opacity: 0.52;
+  transition: opacity 260ms ease;
+}
+
+.portfolio-page-card:hover .portfolio-page-card__image {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+.portfolio-page-card:hover .portfolio-page-card__accent {
+  opacity: 0.85;
+}
+
+.portfolio-page-card__top {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  right: 28px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.portfolio-page-card__top svg {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: color-mix(in srgb, var(--project-accent) 78%, #050505);
+  padding: 11px;
+}
+
+.portfolio-page-card__content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  display: grid;
+  gap: 22px;
+  padding: 36px 40px 38px;
+}
+
+.portfolio-page-card h2 {
+  max-width: 520px;
+  margin: 0;
+  color: #fff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(2.7rem, 4vw, 4.25rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.86;
+  text-transform: uppercase;
+}
+
+.portfolio-page-card p {
+  max-width: 500px;
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: "Barlow", sans-serif;
+  font-size: 0.96rem;
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+.portfolio-page-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.portfolio-page-card dl div {
+  min-width: 0;
+}
+
+.portfolio-page-card dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 5px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.portfolio-page-card dt svg {
+  width: 14px;
+  height: 14px;
+  color: color-mix(in srgb, var(--project-accent) 80%, #fff);
+}
+
+.portfolio-page-card dd {
+  margin: 0;
+  overflow: hidden;
+  color: #fff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.portfolio-page-state {
+  min-height: 520px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.035);
+  text-align: center;
+}
+
+.portfolio-page-state strong {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+}
+
+.portfolio-page-state span {
+  color: rgba(255, 255, 255, 0.54);
+  font-family: "Barlow", sans-serif;
+}
+
+.portfolio-page-load {
+  display: flex;
+  justify-content: center;
+  margin-top: 44px;
+}
+
+.portfolio-page-load button {
+  min-height: 48px;
+  border: 1px solid rgba(249, 115, 22, 0.68);
+  background: #fff;
+  color: #050505;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  padding: 0 20px;
+}
+
+.portfolio-page-load button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+@media (max-width: 1040px) {
+  .portfolio-page {
+    padding-top: 96px;
+  }
+
+  .portfolio-page-hero {
+    margin-bottom: 52px;
+  }
+
+  .portfolio-page-grid {
+    gap: 22px;
+  }
+
+  .portfolio-page-card {
+    min-height: 520px;
+  }
+
+  .portfolio-page-card__content {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 760px) {
+  .portfolio-page {
+    padding: 88px 18px 72px;
+  }
+
+  .portfolio-page-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-page-card {
+    min-height: 500px;
+    border-radius: 18px;
+  }
+
+  .portfolio-page-card__top {
+    top: 18px;
+    left: 18px;
+    right: 18px;
+  }
+
+  .portfolio-page-card__content {
+    padding: 22px;
+  }
+
+  .portfolio-page-card h2 {
+    font-size: clamp(2.45rem, 12vw, 3.5rem);
+  }
+
+  .portfolio-page-card dl {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

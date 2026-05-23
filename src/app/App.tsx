@@ -24,6 +24,9 @@ const PortfolioDetailPage = lazy(() =>
     default: module.PortfolioDetailPage,
   })),
 );
+const PortfolioPage = lazy(() =>
+  import("./pages/PortfolioPage").then((module) => ({ default: module.PortfolioPage })),
+);
 const LoginPage = lazy(() =>
   import("./pages/LoginPage").then((module) => ({ default: module.LoginPage })),
 );
@@ -122,6 +125,8 @@ export default function App() {
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/events" element={<DiscoverPage />} />
           <Route path="/events/:slug" element={<EventDetailPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/projects" element={<PortfolioPage />} />
           <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
           <Route path="/projects/:slug" element={<PortfolioDetailPage />} />
           <Route path="/news" element={<BlogPage />} />

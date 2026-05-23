@@ -27,6 +27,16 @@ class ListEvents extends Page
 
     private const EVENT_IMAGE_UPLOAD_MAX_KB = 1024000;
 
+    private const SEAT_MAP_IMAGE_MAX_EDGE = 2560;
+
+    private const SEAT_MAP_IMAGE_QUALITY = 86;
+
+    private const DEFAULT_EVENT_TIMEZONE = 'Asia/Kuala_Lumpur';
+
+    private const DEFAULT_ORGANIZER_NAME = 'Black Sky Enterprise';
+
+    private const DEFAULT_IMPORTANT_INFORMATION = "- Ticket purchases, payment confirmation, refunds, and ticket validity are handled by the official ticketing vendor.\n- Entry requirements, venue rules, seating changes, and event updates follow the vendor or venue policy.\n- Please review the vendor checkout page and event terms before completing your purchase.";
+
     private const EVENT_GENRES = [
         'FESTIVAL' => 'Festival',
         'ARENA SHOW' => 'Arena Show',
@@ -62,7 +72,8 @@ class ListEvents extends Page
         'about' => 'About',
         'event_details' => 'Event Details',
         'on_sale_details' => 'On-Sale Details',
-        'ticket_pricing' => 'Seat Map & Ticket Pricing',
+        'seat_map_ticket_pricing' => 'Seat Map & Ticket Pricing',
+        'ticket_pricing' => 'Ticket Pricing',
         'location' => 'Location',
         'ticketing_information' => 'Ticketing Information',
         'important_information' => 'Important Information',
@@ -70,12 +81,6 @@ class ListEvents extends Page
         'fan_benefit_information' => 'Fan Benefit Information',
         'event_guide' => 'Event Guide',
         'custom' => 'Custom Section',
-    ];
-
-    private const CORE_EVENT_SECTION_KEYS = [
-        'about',
-        'event_details',
-        'location',
     ];
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
@@ -114,7 +119,7 @@ class ListEvents extends Page
 
     public mixed $eventImage = null;
 
-    public string $sectionToAdd = 'about';
+    public mixed $seatMapImage = null;
 
     /**
      * @var array<string, mixed>
@@ -136,32 +141,17 @@ class ListEvents extends Page
         return '';
     }
 
+    public static function getNavigationItemActiveRoutePattern(): string
+    {
+        return 'filament.admin.pages.events*';
+    }
+
     /**
      * @return array<string, string>
      */
     public function genreOptions(): array
     {
         return self::EVENT_GENRES;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function sectionOptions(): array
-    {
-        return self::EVENT_SECTION_TYPES;
-    }
-
-    public function sectionHelpText(string $sectionKey): ?string
-    {
-        return match ($sectionKey) {
-            'event_details' => 'Venue, date, and time come from the main fields above. Add notes here only when this event needs extra detail copy.',
-            'location' => 'Venue, city, country, and directions are generated from the location fields above. Add parking or entry notes here when needed.',
-            'ticket_pricing' => 'Use short lines or bullets for pricing tiers, seat maps, and ticket categories.',
-            'ticketing_information' => 'Use this for ticket limits, purchase rules, and redemption instructions.',
-            'important_information', 'admission_policy' => 'Use bullets for rules, entry requirements, age limits, or prohibited items.',
-            default => null,
-        };
     }
 
     public function updatedSearch(): void
@@ -201,6 +191,7 @@ class ListEvents extends Page
         $this->resetValidation();
         $this->editingEventId = null;
         $this->eventImage = null;
+        $this->seatMapImage = null;
         $this->resetEventForm();
         $this->isFormOpen = true;
     }
@@ -213,7 +204,11 @@ class ListEvents extends Page
 
         $this->resetValidation();
         $this->eventImage = null;
+        $this->seatMapImage = null;
         $this->editingEventId = $event->id;
+        $sections = $this->eventSectionsByKey($event);
+        $seatMapSection = $sections['seat_map_ticket_pricing'] ?? $sections['ticket_pricing'] ?? [];
+
         $this->form = [
             'title' => $event->title,
             'slug' => $event->slug,
@@ -223,7 +218,7 @@ class ListEvents extends Page
             'country_code' => $event->country_code,
             'genre' => $event->genre,
             'start_date' => $event->start_date?->toDateString(),
-            'start_time' => $event->start_time ? Str::of((string) $event->start_time)->beforeLast(':')->toString() : '',
+            'start_time' => $this->timeForInput($event->start_time),
             'end_date' => $event->end_date?->toDateString(),
             'date_display' => $event->date_display,
             'timezone' => $event->timezone,
@@ -231,12 +226,14 @@ class ListEvents extends Page
             'is_sold_out' => $event->is_sold_out,
             'image_url' => $event->image_url,
             'accent_color' => $event->accent_color,
-            'glow_color' => $event->glow_color,
             'vendor_url' => $event->vendor_url,
             'organizer_name' => $event->organizer_name,
             'organizer_url' => $event->organizer_url,
             'spotify_embed_url' => $event->spotify_embed_url,
-            'sections' => $this->eventSectionFormRows($event),
+            'detail_event_details' => $sections['event_details']['content'] ?? '',
+            'google_maps_url' => $sections['location']['content'] ?? '',
+            'ticket_pricing' => $sections['ticket_pricing']['content'] ?? '',
+            'seat_map_image_url' => $seatMapSection['image_url'] ?? '',
             'meta_title' => $event->meta_title,
             'meta_description' => $event->meta_description,
             'meta_keywords' => $event->meta_keywords,
@@ -246,46 +243,23 @@ class ListEvents extends Page
         $this->isFormOpen = true;
     }
 
-    public function addEventSection(): void
-    {
-        $sectionKey = array_key_exists($this->sectionToAdd, self::EVENT_SECTION_TYPES)
-            ? $this->sectionToAdd
-            : 'custom';
-
-        $this->form['sections'][] = [
-            'id' => null,
-            'section_key' => $sectionKey,
-            'title' => self::EVENT_SECTION_TYPES[$sectionKey],
-            'content' => '',
-            'is_enabled' => true,
-        ];
-    }
-
-    public function removeEventSection(int $index): void
-    {
-        unset($this->form['sections'][$index]);
-
-        $this->form['sections'] = array_values($this->form['sections'] ?? []);
-    }
-
     public function closeEventForm(): void
     {
         $this->isFormOpen = false;
         $this->editingEventId = null;
         $this->eventImage = null;
+        $this->seatMapImage = null;
         $this->resetValidation();
         $this->resetEventForm();
     }
 
-    public function saveEvent(): void
+    public function saveEvent(): mixed
     {
         $this->form['slug'] = filled($this->form['slug'] ?? null)
             ? Str::slug((string) $this->form['slug'])
             : Str::slug((string) ($this->form['title'] ?? ''));
 
         $validated = $this->validate()['form'];
-        $sections = $validated['sections'] ?? [];
-        unset($validated['sections']);
 
         $slug = $validated['slug'];
 
@@ -295,13 +269,34 @@ class ListEvents extends Page
 
         $oldImageUrl = $event->image_url;
         $imageUrl = filled($validated['image_url'] ?? null) ? $validated['image_url'] : $event->image_url;
+        $oldSeatMapImageUrl = $this->editingEventId
+            ? $event->sections()
+                ->whereIn('section_key', ['seat_map_ticket_pricing', 'ticket_pricing'])
+                ->whereNotNull('image_url')
+                ->value('image_url')
+            : null;
+        $seatMapImageUrl = filled($validated['seat_map_image_url'] ?? null)
+            ? $validated['seat_map_image_url']
+            : null;
 
         if ($this->eventImage instanceof TemporaryUploadedFile) {
             $imageUrl = $this->storeCompressedEventImage($this->eventImage, $slug);
         }
 
+        if ($this->seatMapImage instanceof TemporaryUploadedFile) {
+            $seatMapImageUrl = $this->storeCompressedSeatMapImage($this->seatMapImage, $slug);
+        }
+
         $accentColor = $validated['accent_color'] ?? '#0EA5E9';
         $spotifyEmbedUrl = $this->normalizeSpotifyEmbedUrl($validated['spotify_embed_url'] ?? null);
+        $validated['google_maps_url'] = $this->normalizeGoogleMapsUrl($validated['google_maps_url'] ?? null);
+        $sections = $this->eventSectionsFromForm($validated, $seatMapImageUrl);
+        unset(
+            $validated['detail_event_details'],
+            $validated['google_maps_url'],
+            $validated['ticket_pricing'],
+            $validated['seat_map_image_url']
+        );
 
         $event->fill([
             ...$validated,
@@ -310,29 +305,23 @@ class ListEvents extends Page
             'genre' => Str::upper($validated['genre']),
             'start_time' => filled($validated['start_time'] ?? null) ? $validated['start_time'] : null,
             'end_date' => filled($validated['end_date'] ?? null) ? $validated['end_date'] : null,
-            'date_display' => filled($validated['date_display'] ?? null) ? $validated['date_display'] : null,
+            'date_display' => null,
+            'timezone' => filled($validated['timezone'] ?? null) ? $validated['timezone'] : self::DEFAULT_EVENT_TIMEZONE,
             'is_sold_out' => (bool) ($validated['is_sold_out'] ?? false),
             'image_url' => $imageUrl,
             'accent_color' => $accentColor,
+            'organizer_name' => self::DEFAULT_ORGANIZER_NAME,
+            'organizer_url' => null,
             'spotify_embed_url' => $spotifyEmbedUrl,
-            'glow_color' => filled($validated['glow_color'] ?? null)
-                ? $validated['glow_color']
-                : $this->glowColorFromAccent($accentColor),
+            'glow_color' => $this->glowColorFromAccent($accentColor),
             'published_at' => $validated['status'] === 'published'
                 ? ($event->published_at ?? now())
                 : null,
-            'meta_title' => filled($validated['meta_title'] ?? null)
-                ? $validated['meta_title']
-                : $this->defaultMetaTitle($validated),
-            'meta_description' => filled($validated['meta_description'] ?? null)
-                ? $validated['meta_description']
-                : $this->defaultMetaDescription($validated),
-            'canonical_url' => filled($validated['canonical_url'] ?? null)
-                ? $validated['canonical_url']
-                : url('/events/' . $slug),
-            'og_image' => filled($validated['og_image'] ?? null)
-                ? $validated['og_image']
-                : $imageUrl,
+            'meta_title' => $this->defaultMetaTitle($validated),
+            'meta_description' => $this->defaultMetaDescription($validated),
+            'meta_keywords' => $this->defaultMetaKeywords($validated),
+            'canonical_url' => url('/events/' . $slug),
+            'og_image' => $imageUrl,
         ]);
         $event->save();
         $this->syncEventSections($event, $sections);
@@ -341,17 +330,29 @@ class ListEvents extends Page
             $this->deleteStoredEventImage($oldImageUrl);
         }
 
-        $this->isFormOpen = false;
-        $this->editingEventId = null;
-        $this->eventImage = null;
-        $this->resetEventForm();
-        $this->resetPage('eventsPage');
+        if ($this->seatMapImage instanceof TemporaryUploadedFile && $oldSeatMapImageUrl !== $seatMapImageUrl) {
+            $this->deleteStoredEventImage($oldSeatMapImageUrl);
+        }
 
         Notification::make()
             ->title('Event saved')
             ->body($event->title . ' has been saved.')
             ->success()
             ->send();
+
+        return $this->afterEventSaved($event);
+    }
+
+    protected function afterEventSaved(Event $event): mixed
+    {
+        $this->isFormOpen = false;
+        $this->editingEventId = null;
+        $this->eventImage = null;
+        $this->seatMapImage = null;
+        $this->resetEventForm();
+        $this->resetPage('eventsPage');
+
+        return null;
     }
 
     private function glowColorFromAccent(string $accentColor): string
@@ -368,6 +369,19 @@ class ListEvents extends Page
             hexdec(substr($hex, 2, 2)),
             hexdec(substr($hex, 4, 2)),
         );
+    }
+
+    private function timeForInput(mixed $time): string
+    {
+        if (blank($time)) {
+            return '';
+        }
+
+        $value = (string) $time;
+
+        return preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d/', $value) === 1
+            ? substr($value, 0, 5)
+            : '';
     }
 
     public function confirmDelete(int $eventId): void
@@ -429,8 +443,8 @@ class ListEvents extends Page
             ->search($this->search)
             ->startingFrom($this->dateFrom)
             ->startingUntil($this->dateTo)
-            ->orderBy('start_date')
-            ->orderBy('id')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->paginate($perPage, ['*'], 'eventsPage');
     }
 
@@ -465,16 +479,20 @@ class ListEvents extends Page
                 'max:' . self::EVENT_IMAGE_UPLOAD_MAX_KB,
             ],
             'form.accent_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'form.glow_color' => ['nullable', 'string', 'max:80'],
             'form.vendor_url' => ['nullable', 'url', 'max:2048'],
             'form.organizer_name' => ['nullable', 'string', 'max:255'],
             'form.organizer_url' => ['nullable', 'url', 'max:2048'],
             'form.spotify_embed_url' => ['nullable', 'url', 'max:2048'],
-            'form.sections' => ['array', 'max:12'],
-            'form.sections.*.section_key' => ['required', Rule::in(array_keys(self::EVENT_SECTION_TYPES))],
-            'form.sections.*.title' => ['nullable', 'string', 'max:255'],
-            'form.sections.*.content' => ['nullable', 'string', 'max:20000'],
-            'form.sections.*.is_enabled' => ['boolean'],
+            'form.detail_event_details' => ['nullable', 'string', 'max:20000'],
+            'form.google_maps_url' => ['nullable', 'url', 'max:2048'],
+            'form.ticket_pricing' => ['nullable', 'string', 'max:20000'],
+            'form.seat_map_image_url' => ['nullable', 'string', 'max:2048'],
+            'seatMapImage' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp,gif',
+                'max:' . self::EVENT_IMAGE_UPLOAD_MAX_KB,
+            ],
             'form.meta_title' => ['nullable', 'string', 'max:255'],
             'form.meta_description' => ['nullable', 'string', 'max:1000'],
             'form.meta_keywords' => ['nullable', 'string', 'max:255'],
@@ -485,8 +503,6 @@ class ListEvents extends Page
 
     private function resetEventForm(): void
     {
-        $this->sectionToAdd = 'about';
-
         $this->form = [
             'title' => '',
             'slug' => '',
@@ -499,17 +515,19 @@ class ListEvents extends Page
             'start_time' => '',
             'end_date' => '',
             'date_display' => '',
-            'timezone' => 'Asia/Kuala_Lumpur',
+            'timezone' => self::DEFAULT_EVENT_TIMEZONE,
             'status' => 'published',
             'is_sold_out' => false,
             'image_url' => '',
             'accent_color' => '#0EA5E9',
-            'glow_color' => '',
             'vendor_url' => '',
-            'organizer_name' => 'Black Sky Enterprise',
+            'organizer_name' => self::DEFAULT_ORGANIZER_NAME,
             'organizer_url' => '',
             'spotify_embed_url' => '',
-            'sections' => $this->eventSectionFormRows(),
+            'detail_event_details' => '',
+            'google_maps_url' => '',
+            'ticket_pricing' => "- General Admission: RM 188\n- Premium Zone: RM 328\n- VIP Deck: RM 488",
+            'seat_map_image_url' => '',
             'meta_title' => '',
             'meta_description' => '',
             'meta_keywords' => '',
@@ -524,6 +542,40 @@ class ListEvents extends Page
      */
     private function storeCompressedEventImage(TemporaryUploadedFile $upload, string $slug): string
     {
+        return $this->storeCompressedImage(
+            upload: $upload,
+            slug: $slug,
+            directory: 'events',
+            errorField: 'eventImage',
+            maxEdge: self::EVENT_IMAGE_MAX_EDGE,
+            quality: self::EVENT_IMAGE_QUALITY,
+            label: 'artwork',
+        );
+    }
+
+    private function storeCompressedSeatMapImage(TemporaryUploadedFile $upload, string $slug): string
+    {
+        return $this->storeCompressedImage(
+            upload: $upload,
+            slug: $slug,
+            directory: 'events/seat-maps',
+            errorField: 'seatMapImage',
+            maxEdge: self::SEAT_MAP_IMAGE_MAX_EDGE,
+            quality: self::SEAT_MAP_IMAGE_QUALITY,
+            label: 'seat map',
+        );
+    }
+
+    private function storeCompressedImage(
+        TemporaryUploadedFile $upload,
+        string $slug,
+        string $directory,
+        string $errorField,
+        int $maxEdge,
+        int $quality,
+        string $label,
+    ): string
+    {
         @ini_set('memory_limit', '1024M');
         @set_time_limit(120);
 
@@ -532,7 +584,7 @@ class ListEvents extends Page
 
         if ($imageInfo === false) {
             throw ValidationException::withMessages([
-                'eventImage' => 'The artwork file could not be read as an image.',
+                $errorField => 'The ' . $label . ' file could not be read as an image.',
             ]);
         }
 
@@ -547,11 +599,11 @@ class ListEvents extends Page
 
         if (! $source) {
             throw ValidationException::withMessages([
-                'eventImage' => 'The artwork format is not supported. Please upload JPG, PNG, WEBP, or GIF.',
+                $errorField => 'The ' . $label . ' format is not supported. Please upload JPG, PNG, WEBP, or GIF.',
             ]);
         }
 
-        $scale = min(1, self::EVENT_IMAGE_MAX_EDGE / max($sourceWidth, $sourceHeight));
+        $scale = min(1, $maxEdge / max($sourceWidth, $sourceHeight));
         $targetWidth = max(1, (int) round($sourceWidth * $scale));
         $targetHeight = max(1, (int) round($sourceHeight * $scale));
         $target = imagecreatetruecolor($targetWidth, $targetHeight);
@@ -562,18 +614,18 @@ class ListEvents extends Page
         imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
 
         $safeSlug = Str::slug($slug) ?: 'event';
-        $relativePath = 'events/' . $safeSlug . '-' . Str::uuid() . '.webp';
+        $relativePath = trim($directory, '/') . '/' . $safeSlug . '-' . Str::uuid() . '.webp';
 
-        Storage::disk('public')->makeDirectory('events');
+        Storage::disk('public')->makeDirectory(trim($directory, '/'));
 
-        $stored = @imagewebp($target, Storage::disk('public')->path($relativePath), self::EVENT_IMAGE_QUALITY);
+        $stored = @imagewebp($target, Storage::disk('public')->path($relativePath), $quality);
 
         imagedestroy($source);
         imagedestroy($target);
 
         if (! $stored) {
             throw ValidationException::withMessages([
-                'eventImage' => 'The artwork could not be compressed. Please try another image.',
+                $errorField => 'The ' . $label . ' could not be compressed. Please try another image.',
             ]);
         }
 
@@ -630,6 +682,30 @@ class ListEvents extends Page
         return 'https://open.spotify.com/embed/' . $type . '/' . $id . '?utm_source=generator';
     }
 
+    private function normalizeGoogleMapsUrl(?string $url): ?string
+    {
+        if (blank($url)) {
+            return null;
+        }
+
+        $trimmedUrl = trim($url);
+        $parts = parse_url($trimmedUrl);
+        $scheme = Str::lower((string) ($parts['scheme'] ?? ''));
+        $host = Str::lower((string) ($parts['host'] ?? ''));
+        $path = (string) ($parts['path'] ?? '');
+        $isGoogleMapsUrl = in_array($host, ['maps.app.goo.gl', 'maps.google.com'], true)
+            || ($host === 'goo.gl' && str_starts_with($path, '/maps'))
+            || (str_contains($host, 'google.') && str_contains($path, '/maps'));
+
+        if (! in_array($scheme, ['http', 'https'], true) || ! $isGoogleMapsUrl) {
+            throw ValidationException::withMessages([
+                'form.google_maps_url' => 'Use a valid Google Maps link.',
+            ]);
+        }
+
+        return $trimmedUrl;
+    }
+
     /**
      * @param array<string, mixed> $event
      */
@@ -653,6 +729,25 @@ class ListEvents extends Page
     }
 
     /**
+     * @param array<string, mixed> $event
+     */
+    private function defaultMetaKeywords(array $event): string
+    {
+        $keywords = array_unique(array_filter([
+            'Black Sky',
+            self::DEFAULT_ORGANIZER_NAME,
+            'event',
+            'concert',
+            $event['title'] ?? null,
+            $event['genre'] ?? null,
+            $event['city'] ?? null,
+            $event['venue'] ?? null,
+        ]));
+
+        return Str::limit(implode(', ', $keywords), 255, '');
+    }
+
+    /**
      * @param array<int, array<string, mixed>> $sections
      */
     private function syncEventSections(Event $event, array $sections): void
@@ -661,8 +756,9 @@ class ListEvents extends Page
 
         foreach (array_values($sections) as $index => $section) {
             $content = trim((string) ($section['content'] ?? ''));
+            $imageUrl = trim((string) ($section['image_url'] ?? ''));
 
-            if ($content === '') {
+            if ($content === '' && $imageUrl === '') {
                 continue;
             }
 
@@ -677,6 +773,7 @@ class ListEvents extends Page
                 'section_key' => $sectionKey,
                 'title' => $title !== '' ? $title : self::EVENT_SECTION_TYPES[$sectionKey],
                 'content' => $content,
+                'image_url' => $imageUrl !== '' ? $imageUrl : null,
                 'sort_order' => $index,
                 'is_enabled' => (bool) ($section['is_enabled'] ?? true),
             ]);
@@ -684,51 +781,69 @@ class ListEvents extends Page
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<string, array{content: string, image_url: string}>
      */
-    private function eventSectionFormRows(?Event $event = null): array
+    private function eventSectionsByKey(Event $event): array
     {
-        $rows = $event?->relationLoaded('sections')
-            ? $event->sections
-                ->map(fn ($section): array => [
-                    'id' => $section->id,
-                    'section_key' => $section->section_key,
-                    'title' => $section->title,
-                    'content' => $section->content,
-                    'is_enabled' => $section->is_enabled,
-                ])
-                ->values()
-                ->all()
-            : [];
-
-        $existingKeys = collect($rows)
-            ->pluck('section_key')
-            ->filter()
+        return $event->sections
+            ->mapWithKeys(fn ($section): array => [
+                $section->section_key => [
+                    'content' => (string) ($section->content ?? ''),
+                    'image_url' => (string) ($section->image_url ?? ''),
+                ],
+            ])
             ->all();
-
-        foreach (self::CORE_EVENT_SECTION_KEYS as $sectionKey) {
-            if (in_array($sectionKey, $existingKeys, true)) {
-                continue;
-            }
-
-            $rows[] = [
-                'id' => null,
-                'section_key' => $sectionKey,
-                'title' => self::EVENT_SECTION_TYPES[$sectionKey],
-                'content' => $this->defaultSectionContent($sectionKey, $event),
-                'is_enabled' => true,
-            ];
-        }
-
-        return array_values($rows);
     }
 
-    private function defaultSectionContent(string $sectionKey, ?Event $event = null): string
+    /**
+     * @param array<string, mixed> $form
+     * @return array<int, array<string, mixed>>
+     */
+    private function eventSectionsFromForm(array $form, ?string $seatMapImageUrl): array
     {
-        if ($sectionKey === 'about' && filled($event?->subtitle)) {
-            return (string) $event->subtitle;
-        }
-
-        return '';
+        return [
+            [
+                'section_key' => 'about',
+                'title' => self::EVENT_SECTION_TYPES['about'],
+                'content' => trim((string) ($form['subtitle'] ?? '')),
+                'image_url' => null,
+                'is_enabled' => true,
+            ],
+            [
+                'section_key' => 'event_details',
+                'title' => self::EVENT_SECTION_TYPES['event_details'],
+                'content' => trim((string) ($form['detail_event_details'] ?? '')),
+                'image_url' => null,
+                'is_enabled' => true,
+            ],
+            [
+                'section_key' => 'location',
+                'title' => self::EVENT_SECTION_TYPES['location'],
+                'content' => trim((string) ($form['google_maps_url'] ?? '')),
+                'image_url' => null,
+                'is_enabled' => true,
+            ],
+            [
+                'section_key' => 'seat_map_ticket_pricing',
+                'title' => self::EVENT_SECTION_TYPES['seat_map_ticket_pricing'],
+                'content' => '',
+                'image_url' => $seatMapImageUrl,
+                'is_enabled' => true,
+            ],
+            [
+                'section_key' => 'ticket_pricing',
+                'title' => self::EVENT_SECTION_TYPES['ticket_pricing'],
+                'content' => trim((string) ($form['ticket_pricing'] ?? '')),
+                'image_url' => null,
+                'is_enabled' => true,
+            ],
+            [
+                'section_key' => 'important_information',
+                'title' => self::EVENT_SECTION_TYPES['important_information'],
+                'content' => self::DEFAULT_IMPORTANT_INFORMATION,
+                'image_url' => null,
+                'is_enabled' => true,
+            ],
+        ];
     }
 }

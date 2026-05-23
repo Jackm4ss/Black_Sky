@@ -22,10 +22,10 @@
                     <p class="bsa-eyebrow">Upcoming Events & Shows</p>
                     <h2>Published Event Catalog</h2>
                 </div>
-                <button type="button" class="bsa-events-add" wire:click="openCreate">
+                <a class="bsa-events-add" href="{{ \App\Filament\Pages\Events\CreateEvent::getUrl() }}">
                     <x-heroicon-o-plus />
                     <span>Add Event</span>
-                </button>
+                </a>
             </div>
 
             <div class="bsa-events-toolbar" aria-label="Event filters">
@@ -49,8 +49,8 @@
                         data-from-input="event-date-from"
                         data-to-input="event-date-to"
                     ></div>
-                    <input id="event-date-from" name="date_from" type="hidden" wire:model.live="dateFrom">
-                    <input id="event-date-to" name="date_to" type="hidden" wire:model.live="dateTo">
+                    <input id="event-date-from" name="date_from" type="hidden" wire:model.live="dateFrom" value="{{ $dateFrom }}">
+                    <input id="event-date-to" name="date_to" type="hidden" wire:model.live="dateTo" value="{{ $dateTo }}">
                 </div>
 
                 <label class="bsa-events-field bsa-events-field-show">
@@ -126,9 +126,9 @@
                                 </td>
                                 <td>
                                     <div class="bsa-events-actions">
-                                        <button type="button" wire:click="openEdit({{ $event->id }})" aria-label="Edit {{ $event->title }}">
+                                        <a href="{{ \App\Filament\Pages\Events\EditEvent::getUrl(['record' => $event->id]) }}" aria-label="Edit {{ $event->title }}">
                                             <x-heroicon-o-pencil-square />
-                                        </button>
+                                        </a>
                                         <button type="button" class="bsa-events-danger-action" wire:click="confirmDelete({{ $event->id }})" aria-label="Delete {{ $event->title }}">
                                             <x-heroicon-o-trash />
                                         </button>
@@ -196,146 +196,168 @@
                     </header>
 
                     <form class="bsa-events-form" wire:submit.prevent="saveEvent" enctype="multipart/form-data">
-                        <div class="bsa-events-form-intro">
-                            <strong>{{ $editingEventId ? 'Update the main event details.' : 'Add the event details admins use every day.' }}</strong>
-                            <span>Fill the event basics and upload the artwork. The public event card is prepared automatically.</span>
-                        </div>
+                        <section class="bsa-events-form-panel">
+                            <header class="bsa-events-form-panel-head">
+                                <span>Event Card</span>
+                            </header>
 
-                        <div class="bsa-events-form-grid bsa-events-form-grid-simple">
-                            <label class="bsa-events-field">
-                                <span>Event Name<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                <input id="event-form-title-input" name="title" type="text" wire:model="form.title" placeholder="IGNITE FESTIVAL">
-                                @error('form.title') <em>{{ $message }}</em> @enderror
-                            </label>
-
-                            <label class="bsa-events-field">
-                                <span>Genre<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                <select id="event-form-genre" name="genre" wire:model="form.genre">
-                                    <option value="">Select genre</option>
-                                    @foreach ($this->genreOptions() as $genreValue => $genreLabel)
-                                        <option value="{{ $genreValue }}">{{ $genreLabel }}</option>
-                                    @endforeach
-                                </select>
-                                @error('form.genre') <em>{{ $message }}</em> @enderror
-                            </label>
-
-                            <label class="bsa-events-field bsa-events-field-wide">
-                                <span>Short Description</span>
-                                <input id="event-form-subtitle" name="subtitle" type="text" wire:model="form.subtitle" placeholder="A short line for the event card">
-                                @error('form.subtitle') <em>{{ $message }}</em> @enderror
-                            </label>
-
-                            <div class="bsa-events-field bsa-events-field-wide">
-                                <span>Event Date Range<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                <div
-                                    wire:ignore
-                                    data-bsa-date-range-picker
-                                    data-from-input="event-form-start-date"
-                                    data-to-input="event-form-end-date"
-                                ></div>
-                                <input id="event-form-start-date" name="start_date" type="hidden" wire:model.live="form.start_date">
-                                <input id="event-form-end-date" name="end_date" type="hidden" wire:model.live="form.end_date">
-                                @error('form.start_date') <em>{{ $message }}</em> @enderror
-                                @error('form.end_date') <em>{{ $message }}</em> @enderror
-                            </div>
-
-                            <div class="bsa-events-field">
-                                <span>Start Time</span>
-                                <div
-                                    wire:ignore
-                                    data-bsa-time-picker
-                                    data-time-input="event-form-start-time"
-                                ></div>
-                                <input id="event-form-start-time" name="start_time" type="hidden" wire:model="form.start_time">
-                                @error('form.start_time') <em>{{ $message }}</em> @enderror
-                            </div>
-
-                            <label class="bsa-events-field">
-                                <span>Venue<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                <input id="event-form-venue" name="venue" type="text" wire:model="form.venue" placeholder="Venue name">
-                                @error('form.venue') <em>{{ $message }}</em> @enderror
-                            </label>
-
-                            <label class="bsa-events-field">
-                                <span>City<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                <input id="event-form-city" name="city" type="text" wire:model="form.city" placeholder="Kuala Lumpur">
-                                @error('form.city') <em>{{ $message }}</em> @enderror
-                            </label>
-
-                            <div class="bsa-events-field">
-                                <span>Country<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                <div
-                                    wire:ignore
-                                    data-bsa-country-dropdown
-                                    data-country-input="event-form-country"
-                                ></div>
-                                <input id="event-form-country" name="country_code" type="hidden" wire:model.live="form.country_code">
-                                @error('form.country_code') <em>{{ $message }}</em> @enderror
-                            </div>
-
-                            <label class="bsa-events-field">
-                                <span>Ticket Link</span>
-                                <input id="event-form-vendor" name="vendor_url" type="url" wire:model="form.vendor_url" placeholder="https://...">
-                                @error('form.vendor_url') <em>{{ $message }}</em> @enderror
-                            </label>
-
-                            <label class="bsa-events-field">
-                                <span>Visibility<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                <select id="event-form-status" name="status" wire:model="form.status">
-                                    <option value="published">Published</option>
-                                    <option value="draft">Draft</option>
-                                    <option value="archived">Archived</option>
-                                </select>
-                                @error('form.status') <em>{{ $message }}</em> @enderror
-                            </label>
-
-                            <label class="bsa-events-toggle">
-                                <input id="event-form-sold-out" name="is_sold_out" type="checkbox" wire:model="form.is_sold_out">
-                                <span>Sold out</span>
-                            </label>
-
-                            <div class="bsa-events-upload bsa-events-field-wide">
+                            <div class="bsa-events-form-grid bsa-events-form-grid-simple">
                                 <label class="bsa-events-field">
-                                    <span>
-                                        Artwork Upload
-                                        @if (! $editingEventId)
-                                            <sup class="bsa-events-required-mark" aria-hidden="true">*</sup>
-                                        @endif
-                                    </span>
-                                    <input
-                                        id="event-form-image-file"
-                                        name="event_image"
-                                        type="file"
-                                        wire:model="eventImage"
-                                        accept="image/jpeg,image/png,image/webp,image/gif"
-                                    >
-                                    @error('eventImage') <em>{{ $message }}</em> @enderror
+                                    <span>Event Name<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <input id="event-form-title-input" name="title" type="text" wire:model="form.title" placeholder="IGNITE FESTIVAL">
+                                    @error('form.title') <em>{{ $message }}</em> @enderror
                                 </label>
 
-                                <div class="bsa-events-upload-preview">
-                                    @if ($eventImage)
-                                        <img src="{{ $eventImage->temporaryUrl() }}" alt="Selected event artwork preview">
-                                        <span>Optimized on save</span>
-                                    @elseif (filled($form['image_url'] ?? null))
-                                        <img src="{{ $form['image_url'] }}" alt="Current event artwork preview">
-                                        <span>Current artwork</span>
-                                    @else
-                                        <div>
-                                            <x-heroicon-o-photo />
-                                            <span>JPG, PNG, WEBP, GIF</span>
-                                        </div>
-                                    @endif
+                                <label class="bsa-events-field">
+                                    <span>Genre<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <select id="event-form-genre" name="genre" wire:model="form.genre">
+                                        <option value="">Select genre</option>
+                                        @foreach ($this->genreOptions() as $genreValue => $genreLabel)
+                                            <option value="{{ $genreValue }}">{{ $genreLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('form.genre') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <label class="bsa-events-field bsa-events-field-wide">
+                                    <span>About</span>
+                                    <input id="event-form-subtitle" name="subtitle" type="text" wire:model="form.subtitle" placeholder="The Greatest Electronic Music Gathering in SEA">
+                                    @error('form.subtitle') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <div class="bsa-events-upload bsa-events-field-wide">
+                                    <label class="bsa-events-field">
+                                        <span>
+                                            Artwork
+                                            @if (! $editingEventId)
+                                                <sup class="bsa-events-required-mark" aria-hidden="true">*</sup>
+                                            @endif
+                                        </span>
+                                        <input
+                                            id="event-form-image-file"
+                                            name="event_image"
+                                            type="file"
+                                            wire:model="eventImage"
+                                            accept="image/jpeg,image/png,image/webp,image/gif"
+                                        >
+                                        @error('eventImage') <em>{{ $message }}</em> @enderror
+                                    </label>
+
+                                    <div class="bsa-events-upload-preview">
+                                        @if ($eventImage)
+                                            <img src="{{ $eventImage->temporaryUrl() }}" alt="Selected event artwork preview">
+                                            <span>Selected artwork</span>
+                                        @elseif (filled($form['image_url'] ?? null))
+                                            <img src="{{ $form['image_url'] }}" alt="Current event artwork preview">
+                                            <span>Current artwork</span>
+                                        @else
+                                            <div>
+                                                <x-heroicon-o-photo />
+                                                <span>JPG, PNG, WEBP, GIF</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <label class="bsa-events-field">
+                                    <span>Accent Color<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <input id="event-form-accent" name="accent_color" type="color" wire:model="form.accent_color">
+                                    @error('form.accent_color') <em>{{ $message }}</em> @enderror
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="bsa-events-form-panel">
+                            <header class="bsa-events-form-panel-head">
+                                <span>Schedule & Venue</span>
+                            </header>
+
+                            <div class="bsa-events-form-grid">
+                                <div class="bsa-events-field bsa-events-field-wide">
+                                    <span>Event Date Range<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <div
+                                        wire:ignore
+                                        data-bsa-date-range-picker
+                                        data-from-input="event-form-start-date"
+                                        data-to-input="event-form-end-date"
+                                    ></div>
+                                    <input id="event-form-start-date" name="start_date" type="hidden" wire:model.live="form.start_date" value="{{ $form['start_date'] ?? '' }}">
+                                    <input id="event-form-end-date" name="end_date" type="hidden" wire:model.live="form.end_date" value="{{ $form['end_date'] ?? '' }}">
+                                    @error('form.start_date') <em>{{ $message }}</em> @enderror
+                                    @error('form.end_date') <em>{{ $message }}</em> @enderror
+                                </div>
+
+                                <div class="bsa-events-field">
+                                    <span>Start Time</span>
+                                    <div
+                                        wire:ignore
+                                        data-bsa-time-picker
+                                        data-time-input="event-form-start-time"
+                                    ></div>
+                                    <input id="event-form-start-time" name="start_time" type="hidden" wire:model="form.start_time" value="{{ $form['start_time'] ?? '' }}">
+                                    @error('form.start_time') <em>{{ $message }}</em> @enderror
+                                </div>
+
+                                <label class="bsa-events-field">
+                                    <span>Venue<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <input id="event-form-venue" name="venue" type="text" wire:model="form.venue" placeholder="Venue name">
+                                    @error('form.venue') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <label class="bsa-events-field">
+                                    <span>City<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <input id="event-form-city" name="city" type="text" wire:model="form.city" placeholder="Kuala Lumpur">
+                                    @error('form.city') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <div class="bsa-events-field">
+                                    <span>Country<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <div
+                                        wire:ignore
+                                        data-bsa-country-dropdown
+                                        data-country-input="event-form-country"
+                                    ></div>
+                                    <input id="event-form-country" name="country_code" type="hidden" wire:model.live="form.country_code">
+                                    @error('form.country_code') <em>{{ $message }}</em> @enderror
                                 </div>
                             </div>
-                        </div>
+                        </section>
 
-                        <details class="bsa-events-form-section bsa-events-advanced bsa-events-content-builder" open>
-                            <summary>
-                                <span>Public Detail Sections</span>
-                                <small>These blocks feed the public event detail page. Core details still use the event fields above.</small>
-                            </summary>
+                        <section class="bsa-events-form-panel">
+                            <header class="bsa-events-form-panel-head">
+                                <span>Tickets & Status</span>
+                            </header>
 
-                            <div class="bsa-events-section-builder">
+                            <div class="bsa-events-form-grid bsa-events-form-grid-simple">
+                                <label class="bsa-events-field">
+                                    <span>Ticket Link</span>
+                                    <input id="event-form-vendor" name="vendor_url" type="url" wire:model="form.vendor_url" placeholder="https://...">
+                                    @error('form.vendor_url') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <label class="bsa-events-field">
+                                    <span>Visibility<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
+                                    <select id="event-form-status" name="status" wire:model="form.status">
+                                        <option value="published">Published</option>
+                                        <option value="draft">Draft</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                    @error('form.status') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <label class="bsa-events-toggle bsa-events-field-wide">
+                                    <input id="event-form-sold-out" name="is_sold_out" type="checkbox" wire:model="form.is_sold_out">
+                                    <span>Sold Out</span>
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="bsa-events-form-panel bsa-events-content-builder">
+                            <header class="bsa-events-form-panel-head">
+                                <span>Detail Page</span>
+                            </header>
+
+                            <div class="bsa-events-detail-grid">
                                 <label class="bsa-events-field bsa-events-field-wide">
                                     <span>Spotify Preview URL</span>
                                     <input
@@ -348,147 +370,72 @@
                                     @error('form.spotify_embed_url') <em>{{ $message }}</em> @enderror
                                 </label>
 
-                                <div class="bsa-events-section-add">
+                                <label class="bsa-events-field bsa-events-field-wide">
+                                    <span>Event Details</span>
+                                    <textarea
+                                        id="event-form-detail-event-details"
+                                        name="detail_event_details"
+                                        rows="4"
+                                        wire:model="form.detail_event_details"
+                                        placeholder="Show notes, door open information, or event flow."
+                                    ></textarea>
+                                    @error('form.detail_event_details') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <label class="bsa-events-field bsa-events-field-wide">
+                                    <span>Google Maps Link</span>
+                                    <input
+                                        id="event-form-google-maps"
+                                        name="google_maps_url"
+                                        type="url"
+                                        wire:model="form.google_maps_url"
+                                        placeholder="https://maps.app.goo.gl/..."
+                                    >
+                                    @error('form.google_maps_url') <em>{{ $message }}</em> @enderror
+                                </label>
+
+                                <div class="bsa-events-upload bsa-events-field-wide">
                                     <label class="bsa-events-field">
-                                        <span>Section Type</span>
-                                        <select id="event-section-type" name="section_type" wire:model="sectionToAdd">
-                                            @foreach ($this->sectionOptions() as $sectionValue => $sectionLabel)
-                                                <option value="{{ $sectionValue }}">{{ $sectionLabel }}</option>
-                                            @endforeach
-                                        </select>
+                                        <span>Seat Map & Ticket Pricing Image</span>
+                                        <input
+                                            id="event-form-seat-map-file"
+                                            name="seat_map_image"
+                                            type="file"
+                                            wire:model="seatMapImage"
+                                            accept="image/jpeg,image/png,image/webp,image/gif"
+                                        >
+                                        @error('seatMapImage') <em>{{ $message }}</em> @enderror
                                     </label>
 
-                                    <button type="button" class="bsa-events-modal-secondary" wire:click="addEventSection">
-                                        Add Section
-                                    </button>
-                                </div>
-
-                                <div class="bsa-events-section-list">
-                                    @forelse (($form['sections'] ?? []) as $sectionIndex => $section)
-                                        <article class="bsa-events-section-block" wire:key="event-section-{{ $sectionIndex }}">
-                                            <div class="bsa-events-section-block-head">
-                                                <label class="bsa-events-field">
-                                                    <span>Type</span>
-                                                    <select wire:model="form.sections.{{ $sectionIndex }}.section_key">
-                                                        @foreach ($this->sectionOptions() as $sectionValue => $sectionLabel)
-                                                            <option value="{{ $sectionValue }}">{{ $sectionLabel }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error("form.sections.$sectionIndex.section_key") <em>{{ $message }}</em> @enderror
-                                                </label>
-
-                                                <label class="bsa-events-field">
-                                                    <span>Title</span>
-                                                    <input type="text" wire:model="form.sections.{{ $sectionIndex }}.title" placeholder="About">
-                                                    @error("form.sections.$sectionIndex.title") <em>{{ $message }}</em> @enderror
-                                                </label>
-
-                                                <label class="bsa-events-toggle bsa-events-section-toggle">
-                                                    <input type="checkbox" wire:model="form.sections.{{ $sectionIndex }}.is_enabled">
-                                                    <span>Enabled</span>
-                                                </label>
-
-                                                <button
-                                                    type="button"
-                                                    class="bsa-events-modal-close"
-                                                    wire:click="removeEventSection({{ $sectionIndex }})"
-                                                    aria-label="Remove section {{ $sectionIndex + 1 }}"
-                                                >
-                                                    <x-heroicon-o-x-mark />
-                                                </button>
+                                    <div class="bsa-events-upload-preview">
+                                        @if ($seatMapImage)
+                                            <img src="{{ $seatMapImage->temporaryUrl() }}" alt="Selected seat map preview">
+                                            <span>Selected guide image</span>
+                                        @elseif (filled($form['seat_map_image_url'] ?? null))
+                                            <img src="{{ $form['seat_map_image_url'] }}" alt="Current seat map preview">
+                                            <span>Current guide image</span>
+                                        @else
+                                            <div>
+                                                <x-heroicon-o-map />
+                                                <span>JPG, PNG, WEBP, GIF</span>
                                             </div>
-
-                                            <label class="bsa-events-field">
-                                                <span>Content</span>
-                                                @if ($this->sectionHelpText($section['section_key'] ?? 'custom'))
-                                                    <small>{{ $this->sectionHelpText($section['section_key'] ?? 'custom') }}</small>
-                                                @endif
-                                                <textarea
-                                                    rows="5"
-                                                    wire:model="form.sections.{{ $sectionIndex }}.content"
-                                                    placeholder="Write event detail content here. Leave blank to skip this section."
-                                                ></textarea>
-                                                @error("form.sections.$sectionIndex.content") <em>{{ $message }}</em> @enderror
-                                            </label>
-                                        </article>
-                                    @empty
-                                        <div class="bsa-events-section-empty">
-                                            <strong>No public detail sections yet</strong>
-                                            <span>Add a section when this event needs about text, ticket pricing, policies, or guides.</span>
-                                        </div>
-                                    @endforelse
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
-                        </details>
-
-                        <details class="bsa-events-form-section bsa-events-advanced">
-                            <summary>
-                                <span>More Options</span>
-                                <small>Organizer, custom page URL, display date, color, and search preview.</small>
-                            </summary>
-
-                            <div class="bsa-events-form-grid">
-                                <label class="bsa-events-field">
-                                    <span>Organizer Name</span>
-                                    <input id="event-form-organizer-name" name="organizer_name" type="text" wire:model="form.organizer_name" placeholder="Black Sky Enterprise">
-                                    @error('form.organizer_name') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field">
-                                    <span>Organizer URL</span>
-                                    <input id="event-form-organizer-url" name="organizer_url" type="url" wire:model="form.organizer_url" placeholder="https://...">
-                                    @error('form.organizer_url') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field">
-                                    <span>Page URL</span>
-                                    <input id="event-form-slug" name="slug" type="text" wire:model="form.slug" placeholder="auto-from-title">
-                                    @error('form.slug') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field">
-                                    <span>Date Display</span>
-                                    <input id="event-form-date-display" name="date_display" type="text" wire:model="form.date_display" placeholder="JUL 19-21, 2026">
-                                    @error('form.date_display') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field">
-                                    <span>Timezone<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                    <input id="event-form-timezone" name="timezone" type="text" wire:model="form.timezone" placeholder="Asia/Kuala_Lumpur">
-                                    @error('form.timezone') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field">
-                                    <span>Accent Color<sup class="bsa-events-required-mark" aria-hidden="true">*</sup></span>
-                                    <input id="event-form-accent" name="accent_color" type="color" wire:model="form.accent_color">
-                                    @error('form.accent_color') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field">
-                                    <span>Search Title</span>
-                                    <input id="event-form-meta-title" name="meta_title" type="text" wire:model="form.meta_title" placeholder="Auto if blank">
-                                    @error('form.meta_title') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field">
-                                    <span>Preferred URL</span>
-                                    <input id="event-form-canonical" name="canonical_url" type="url" wire:model="form.canonical_url" placeholder="Auto if blank">
-                                    @error('form.canonical_url') <em>{{ $message }}</em> @enderror
-                                </label>
 
                                 <label class="bsa-events-field bsa-events-field-wide">
-                                    <span>Search Description</span>
-                                    <textarea id="event-form-meta-description" name="meta_description" rows="3" wire:model="form.meta_description" placeholder="Auto if blank"></textarea>
-                                    @error('form.meta_description') <em>{{ $message }}</em> @enderror
-                                </label>
-
-                                <label class="bsa-events-field bsa-events-field-wide">
-                                    <span>Search Keywords</span>
-                                    <input id="event-form-meta-keywords" name="meta_keywords" type="text" wire:model="form.meta_keywords" placeholder="concert, event, malaysia">
-                                    @error('form.meta_keywords') <em>{{ $message }}</em> @enderror
+                                    <span>Ticket Pricing</span>
+                                    <textarea
+                                        id="event-form-ticket-pricing"
+                                        name="ticket_pricing"
+                                        rows="4"
+                                        wire:model="form.ticket_pricing"
+                                        placeholder="- General Admission: RM 188&#10;- Premium Zone: RM 328&#10;- VIP Deck: RM 488"
+                                    ></textarea>
+                                    @error('form.ticket_pricing') <em>{{ $message }}</em> @enderror
                                 </label>
                             </div>
-                        </details>
+                        </section>
 
                         <footer class="bsa-events-modal-footer">
                             <button type="button" class="bsa-events-modal-secondary" wire:click="closeEventForm">Cancel</button>

@@ -26,6 +26,7 @@ export type PublicEventSection = {
   section_key: string;
   title: string;
   content: string | null;
+  image_url: string | null;
 };
 
 export type PublicEventDetail = PublicEvent & {
@@ -63,6 +64,7 @@ export type PublicEventQuery = {
   dateTo?: string;
   timeframe?: "upcoming" | "past";
   availability?: "all" | "available" | "sold_out";
+  sort?: "date" | "latest";
   cursor?: string;
   perPage?: number;
 };
@@ -79,6 +81,7 @@ export async function getPublicEvents(query: PublicEventQuery = {}) {
   if (query.availability && query.availability !== "all") {
     params.set("availability", query.availability);
   }
+  if (query.sort && query.sort !== "date") params.set("sort", query.sort);
   if (query.cursor) params.set("cursor", query.cursor);
   params.set("per_page", String(query.perPage ?? 10));
 

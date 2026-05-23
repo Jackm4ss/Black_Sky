@@ -14,6 +14,7 @@ const FALLBACK_IMAGE =
 const cardDescriptionColor = "rgba(235,245,255,0.78)";
 const cardMetaColor = "rgba(226,238,255,0.68)";
 const placement: Array<Work["type"]> = ["feature", "tall", "square", "square", "banner"];
+const DEFAULT_ACCENT = "#F97316";
 
 interface Work {
   id: number;
@@ -28,6 +29,19 @@ interface Work {
   type: "feature" | "tall" | "square" | "banner";
 }
 
+function normalizeAccentColor(value?: string | null) {
+  return value && /^#[0-9A-Fa-f]{6}$/.test(value) ? value : DEFAULT_ACCENT;
+}
+
+function hexToRgba(hex: string, alpha: number) {
+  const value = normalizeAccentColor(hex).replace("#", "");
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function toWork(work: PortfolioWorkSummary, index: number): Work {
   return {
     id: work.id,
@@ -36,7 +50,7 @@ function toWork(work: PortfolioWorkSummary, index: number): Work {
     category: work.category,
     year: work.year,
     location: work.location,
-    accentColor: work.accent_color || "#F97316",
+    accentColor: normalizeAccentColor(work.accent_color),
     image: work.featured_image ?? FALLBACK_IMAGE,
     description: work.excerpt,
     type: placement[index] ?? "square",
@@ -66,7 +80,7 @@ function FeatureCard({ work, delay }: { work: Work; delay: number }) {
       onMouseLeave={() => setHovered(false)}
       className="relative overflow-hidden cursor-pointer h-full"
       style={{
-        border: `1px solid ${hovered ? work.accentColor + "55" : "rgba(255,255,255,0.06)"}`,
+        border: `1px solid ${hovered ? hexToRgba(work.accentColor, 0.34) : "rgba(255,255,255,0.06)"}`,
         transition: "border-color 0.4s",
       }}
     >
@@ -91,10 +105,10 @@ function FeatureCard({ work, delay }: { work: Work; delay: number }) {
         }}
       />
       <motion.div
-        animate={{ opacity: hovered ? 1 : 0 }}
+        animate={{ opacity: hovered ? 0.95 : 0.4 }}
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 20% 80%, ${work.accentColor}20 0%, transparent 65%)`,
+          background: `radial-gradient(circle at 20% 80%, ${hexToRgba(work.accentColor, 0.22)} 0%, transparent 65%)`,
         }}
       />
 
@@ -113,28 +127,6 @@ function FeatureCard({ work, delay }: { work: Work; delay: number }) {
       >
         <ArrowUpRight size={18} color="#fff" />
       </motion.div>
-
-      <div
-        className="absolute top-5 left-5"
-        style={{
-          background: "rgba(5,5,5,0.75)",
-          backdropFilter: "blur(8px)",
-          padding: "5px 12px",
-          border: `1px solid ${work.accentColor}30`,
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: "10px",
-            letterSpacing: "0.3em",
-            color: work.accentColor,
-          }}
-        >
-          {work.category.toUpperCase()}
-        </span>
-      </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-7">
         <div
@@ -213,7 +205,7 @@ function TallCard({ work, delay }: { work: Work; delay: number }) {
       onMouseLeave={() => setHovered(false)}
       className="relative overflow-hidden cursor-pointer h-full"
       style={{
-        border: `1px solid ${hovered ? work.accentColor + "55" : "rgba(255,255,255,0.06)"}`,
+        border: `1px solid ${hovered ? hexToRgba(work.accentColor, 0.34) : "rgba(255,255,255,0.06)"}`,
         transition: "border-color 0.4s",
       }}
     >
@@ -238,10 +230,10 @@ function TallCard({ work, delay }: { work: Work; delay: number }) {
         }}
       />
       <motion.div
-        animate={{ opacity: hovered ? 1 : 0 }}
+        animate={{ opacity: hovered ? 0.95 : 0.4 }}
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 50% 90%, ${work.accentColor}28 0%, transparent 65%)`,
+          background: `radial-gradient(circle at 50% 90%, ${hexToRgba(work.accentColor, 0.24)} 0%, transparent 65%)`,
         }}
       />
 
@@ -260,23 +252,6 @@ function TallCard({ work, delay }: { work: Work; delay: number }) {
       >
         <ArrowUpRight size={16} color="#fff" />
       </motion.div>
-
-      <div
-        className="absolute top-5 left-5"
-        style={{ background: "rgba(5,5,5,0.8)", backdropFilter: "blur(8px)", padding: "4px 10px" }}
-      >
-        <span
-          style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: "10px",
-            letterSpacing: "0.28em",
-            color: work.accentColor,
-          }}
-        >
-          {work.category.toUpperCase()}
-        </span>
-      </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-6">
         <div
@@ -347,7 +322,7 @@ function SquareCard({ work, delay }: { work: Work; delay: number }) {
       className="relative overflow-hidden cursor-pointer flex flex-col h-full"
       style={{
         background: "#0A0A0A",
-        border: `1px solid ${hovered ? work.accentColor + "50" : "rgba(255,255,255,0.06)"}`,
+        border: `1px solid ${hovered ? hexToRgba(work.accentColor, 0.31) : "rgba(255,255,255,0.06)"}`,
         transition: "border-color 0.4s",
       }}
     >
@@ -368,10 +343,10 @@ function SquareCard({ work, delay }: { work: Work; delay: number }) {
           style={{ background: "linear-gradient(180deg, transparent 40%, rgba(10,10,10,0.97) 100%)" }}
         />
         <motion.div
-          animate={{ opacity: hovered ? 1 : 0 }}
+          animate={{ opacity: hovered ? 0.95 : 0.4 }}
           className="absolute inset-0"
           style={{
-            background: `radial-gradient(circle at 50% 80%, ${work.accentColor}20 0%, transparent 65%)`,
+            background: `radial-gradient(circle at 50% 80%, ${hexToRgba(work.accentColor, 0.22)} 0%, transparent 65%)`,
           }}
         />
 
@@ -391,19 +366,6 @@ function SquareCard({ work, delay }: { work: Work; delay: number }) {
           <ArrowUpRight size={14} color="#fff" />
         </motion.div>
 
-        <div className="absolute top-4 left-4" style={{ background: work.accentColor, padding: "3px 10px" }}>
-          <span
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
-              fontSize: "9px",
-              letterSpacing: "0.3em",
-              color: "#fff",
-            }}
-          >
-            {work.category.toUpperCase()}
-          </span>
-        </div>
       </div>
 
       <div className="flex-1 flex flex-col justify-between p-5">
@@ -480,7 +442,7 @@ function BannerCard({ work, delay }: { work: Work; delay: number }) {
       onMouseLeave={() => setHovered(false)}
       className="relative overflow-hidden cursor-pointer h-full"
       style={{
-        border: `1px solid ${hovered ? work.accentColor + "55" : "rgba(255,255,255,0.07)"}`,
+        border: `1px solid ${hovered ? hexToRgba(work.accentColor, 0.34) : "rgba(255,255,255,0.07)"}`,
         transition: "border-color 0.4s",
       }}
     >
@@ -505,29 +467,16 @@ function BannerCard({ work, delay }: { work: Work; delay: number }) {
         }}
       />
       <motion.div
-        animate={{ opacity: hovered ? 1 : 0 }}
+        animate={{ opacity: hovered ? 0.95 : 0.38 }}
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 30% 50%, ${work.accentColor}18 0%, transparent 60%)`,
+          background: `radial-gradient(circle at 30% 50%, ${hexToRgba(work.accentColor, 0.2)} 0%, transparent 60%)`,
         }}
       />
 
       <div className="relative z-10 h-full flex items-center px-10 gap-12">
         <div className="flex-shrink-0">
           <div className="flex items-center gap-4 mb-3">
-            <div style={{ background: work.accentColor, padding: "4px 12px" }}>
-              <span
-                style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700,
-                  fontSize: "10px",
-                  letterSpacing: "0.3em",
-                  color: "#fff",
-                }}
-              >
-                {work.category.toUpperCase()}
-              </span>
-            </div>
             <span
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
@@ -589,7 +538,7 @@ function BannerCard({ work, delay }: { work: Work; delay: number }) {
           <motion.div
             animate={{
               background: hovered
-                ? `linear-gradient(135deg, ${work.accentColor}, ${work.accentColor}bb)`
+                ? `linear-gradient(135deg, ${work.accentColor}, ${hexToRgba(work.accentColor, 0.73)})`
                 : "transparent",
               borderColor: hovered ? work.accentColor : "rgba(255,255,255,0.15)",
             }}
@@ -637,7 +586,6 @@ function renderCard(work: Work, index: number) {
 }
 
 export function PortfolioSection() {
-  const [activeFilter, setActiveFilter] = useState("ALL");
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const worksQuery = useQuery({
@@ -648,11 +596,6 @@ export function PortfolioSection() {
     () => (worksQuery.data?.data ?? []).map(toWork),
     [worksQuery.data?.data],
   );
-  const categoryOptions = useMemo(
-    () => ["ALL", ...Array.from(new Set(works.map((work) => work.category)))],
-    [works],
-  );
-  const filteredWorks = works.filter((work) => activeFilter === "ALL" || work.category === activeFilter);
 
   return (
     <section
@@ -723,44 +666,33 @@ export function PortfolioSection() {
             </motion.h2>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="flex w-full max-w-full flex-nowrap items-center gap-1 overflow-x-auto [scrollbar-width:none] xl:w-auto xl:max-w-none xl:overflow-visible [&::-webkit-scrollbar]:hidden"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              padding: "4px",
-              border: "1px solid rgba(255,255,255,0.07)",
-              touchAction: "pan-x",
-            }}
-          >
-            {categoryOptions.map((category) => (
-              <button
-                key={category}
-                aria-pressed={activeFilter === category}
-                onClick={() => setActiveFilter(category)}
-                className="px-5 py-2 transition-all duration-300"
+          <div className="flex w-full xl:w-auto xl:items-end">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ delay: 0.35, duration: 0.6 }}
+            >
+              <Link
+                to="/portfolio"
+                className="flex items-center gap-2 px-4 py-3 md:px-6 transition-all duration-300 whitespace-nowrap no-underline"
                 style={{
+                  border: "1px solid rgba(249,115,22,0.32)",
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontWeight: 700,
                   fontSize: "11px",
                   letterSpacing: "0.25em",
-                  color: activeFilter === category ? "#fff" : "rgba(255,255,255,0.33)",
-                  background:
-                    activeFilter === category
-                      ? "linear-gradient(135deg, #F97316, #FFB700)"
-                      : "transparent",
-                  border: "none",
+                  color: "#F97316",
+                  background: "rgba(249,115,22,0.06)",
                   cursor: "pointer",
-                  flexShrink: 0,
-                  whiteSpace: "nowrap",
+                  textDecoration: "none",
+                  textTransform: "uppercase",
                 }}
               >
-                {category.toUpperCase()}
-              </button>
-            ))}
-          </motion.div>
+                VIEW ALL PROJECTS
+                <ArrowRight size={12} />
+              </Link>
+            </motion.div>
+          </div>
         </div>
 
         {worksQuery.isLoading ? (
@@ -769,13 +701,13 @@ export function PortfolioSection() {
               LOADING PORTFOLIO
             </span>
           </div>
-        ) : worksQuery.isError || filteredWorks.length === 0 ? (
+        ) : worksQuery.isError || works.length === 0 ? (
           <div className="min-h-[520px] grid place-items-center border border-white/10 bg-white/[0.02] px-8 text-center">
             <span className="font-['Barlow_Condensed'] text-xs font-bold tracking-[0.35em] text-white/40">
               NO PORTFOLIO WORK PUBLISHED YET
             </span>
           </div>
-        ) : activeFilter === "ALL" ? (
+        ) : (
           <>
             <div
               className="hidden xl:grid gap-3"
@@ -847,24 +779,6 @@ export function PortfolioSection() {
 
             <div className="flex flex-col gap-4 md:hidden">
               {works.slice(0, 5).map((work, index) => (
-                <div key={work.id} style={{ height: work.type === "tall" ? "430px" : "360px" }}>
-                  {renderCard(work, index)}
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredWorks.map((work, index) => (
-                <div key={work.id} style={{ height: work.type === "tall" ? "520px" : "360px" }}>
-                  {renderCard(work, index)}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-4 md:hidden">
-              {filteredWorks.map((work, index) => (
                 <div key={work.id} style={{ height: work.type === "tall" ? "430px" : "360px" }}>
                   {renderCard(work, index)}
                 </div>

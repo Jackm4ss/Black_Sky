@@ -16,6 +16,7 @@ class EventSection extends Model
         'section_key',
         'title',
         'content',
+        'image_url',
         'sort_order',
         'is_enabled',
     ];

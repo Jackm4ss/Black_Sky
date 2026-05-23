@@ -186,14 +186,12 @@ class PortfolioWorkResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('featured_image_url')
-                    ->label('Image')
-                    ->square(),
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable()
+                Tables\Columns\ViewColumn::make('title')
+                    ->label('Project')
+                    ->view('filament.tables.columns.portfolio-work')
+                    ->searchable(['title', 'excerpt', 'location'])
                     ->sortable()
-                    ->weight('bold')
-                    ->wrap(),
+                    ->extraAttributes(['class' => 'bsa-resource-product-cell']),
                 Tables\Columns\TextColumn::make('category')
                     ->badge()
                     ->searchable()
@@ -231,9 +229,11 @@ class PortfolioWorkResource extends Resource
                         ->all()),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->iconButton(),
+                Tables\Actions\DeleteAction::make()->iconButton(),
             ])
+            ->actionsAlignment('center')
+            ->actionsColumnLabel('Actions')
             ->defaultSort('created_at', 'desc');
     }
 

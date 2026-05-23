@@ -133,7 +133,7 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ViewColumn::make('name')
-                    ->label('Name')
+                    ->label('Member')
                     ->view('filament.tables.columns.user-identity')
                     ->searchable(['name', 'email'])
                     ->sortable(),
@@ -157,12 +157,13 @@ class UserResource extends Resource
                     ->options(RegistrationSourceMeta::options()),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->iconButton(),
                 Tables\Actions\DeleteAction::make()
+                    ->iconButton()
                     ->visible(fn (User $record): bool => Auth::id() !== $record->id),
             ])
             ->actionsAlignment('center')
-            ->actionsColumnLabel('Action')
+            ->actionsColumnLabel('Actions')
             ->defaultSort('created_at', 'desc');
     }
 

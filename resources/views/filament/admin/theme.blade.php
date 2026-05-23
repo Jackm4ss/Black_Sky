@@ -2392,7 +2392,15 @@
         box-shadow: none;
     }
 
-    .fi-resource-list-records-page,
+    .fi-resource-list-records-page {
+        width: min(100%, 1180px);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-inline: auto;
+        color: var(--neo-dark-text);
+    }
+
     .fi-resource-create-record-page,
     .fi-resource-edit-record-page {
         width: min(100%, 1122px);
@@ -2540,6 +2548,7 @@
     }
 
     .fi-resource-list-records-page .fi-ta-table {
+        width: 100%;
         min-width: 940px;
         border-collapse: collapse;
         color: var(--neo-dark-text) !important;
@@ -2627,6 +2636,282 @@
     .fi-resource-list-records-page .fi-ta-actions button:hover {
         background: var(--neo-yellow);
         color: var(--neo-ink) !important;
+    }
+
+    .bsa-resource-list-shell {
+        width: 100%;
+    }
+
+    .bsa-resource-list-card {
+        overflow: hidden;
+    }
+
+    .bsa-resource-list-card .bsa-resource-list-table {
+        background: var(--neo-dark-surface);
+    }
+
+    .bsa-resource-list-card .fi-ta,
+    .bsa-resource-list-card .fi-ta-ctn {
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-table {
+        table-layout: fixed;
+        min-width: 1040px;
+    }
+
+    .bsa-resource-list-card .fi-ta-header-toolbar {
+        display: grid !important;
+        grid-template-columns: minmax(260px, 1fr) auto;
+        align-items: end !important;
+        gap: 12px !important;
+        padding: 20px 18px !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-header-toolbar > .flex:first-child {
+        display: none !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-header-toolbar > .ms-auto {
+        width: 100% !important;
+        margin-inline-start: 0 !important;
+        justify-content: space-between !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-search-field {
+        display: grid;
+        gap: 7px;
+        width: min(100%, 575px);
+    }
+
+    .bsa-resource-list-card .fi-ta-search-field::before {
+        content: "Search";
+        display: block;
+        color: var(--neo-dark-muted);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .bsa-resource-list-card .fi-ta-search-field .fi-input-wrp {
+        height: 38px;
+        border: 2px solid var(--neo-ink) !important;
+        border-radius: 2px !important;
+        background: var(--neo-dark-elevated) !important;
+        box-shadow: 4px 4px 0 var(--neo-ink) !important;
+        color: var(--neo-dark-text) !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-search-field input {
+        color: var(--neo-dark-text) !important;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .bsa-resource-list-card .fi-ta-filters-trigger {
+        height: 38px !important;
+        width: 38px !important;
+        border: 2px solid var(--neo-ink) !important;
+        border-radius: 2px !important;
+        background: var(--neo-blue) !important;
+        box-shadow: 4px 4px 0 var(--neo-ink) !important;
+        color: #fff !important;
+    }
+
+    .bsa-resource-product {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .bsa-resource-product__media {
+        display: grid;
+        place-items: center;
+        width: 60px;
+        height: 40px;
+        flex: 0 0 auto;
+        overflow: hidden;
+        border: 2px solid var(--neo-ink);
+        border-radius: 2px;
+        background: var(--neo-dark-elevated);
+        box-shadow: 3px 3px 0 var(--neo-ink);
+    }
+
+    .bsa-resource-product__media img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .bsa-resource-product__copy {
+        display: grid;
+        gap: 4px;
+        overflow: hidden;
+        min-width: 0;
+    }
+
+    .bsa-resource-product__copy strong {
+        overflow: hidden;
+        color: var(--neo-dark-text);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        line-height: 1.05;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .fi-resource-portfolio .fi-ta-table th:nth-child(1),
+    .fi-resource-portfolio .fi-ta-table td:nth-child(1) {
+        width: 29%;
+    }
+
+    .fi-resource-portfolio .fi-ta-table th:nth-child(2),
+    .fi-resource-portfolio .fi-ta-table td:nth-child(2) {
+        width: 15%;
+    }
+
+    .fi-resource-portfolio .fi-ta-table th:nth-child(3),
+    .fi-resource-portfolio .fi-ta-table td:nth-child(3) {
+        width: 7%;
+    }
+
+    .fi-resource-portfolio .fi-ta-table th:nth-child(4),
+    .fi-resource-portfolio .fi-ta-table td:nth-child(4) {
+        width: 16%;
+    }
+
+    .fi-resource-portfolio .fi-ta-table th:nth-child(5),
+    .fi-resource-portfolio .fi-ta-table td:nth-child(5) {
+        width: 11%;
+    }
+
+    .fi-resource-portfolio .fi-ta-table th:nth-child(6),
+    .fi-resource-portfolio .fi-ta-table td:nth-child(6) {
+        width: 13%;
+    }
+
+    .fi-resource-portfolio .fi-ta-table th:nth-child(7),
+    .fi-resource-portfolio .fi-ta-table td:nth-child(7) {
+        width: 9%;
+    }
+
+    .fi-resource-news .fi-ta-table th:nth-child(1),
+    .fi-resource-news .fi-ta-table td:nth-child(1) {
+        width: 40%;
+    }
+
+    .fi-resource-news .fi-ta-table th:nth-child(2),
+    .fi-resource-news .fi-ta-table td:nth-child(2) {
+        width: 20%;
+    }
+
+    .fi-resource-news .fi-ta-table th:nth-child(3),
+    .fi-resource-news .fi-ta-table td:nth-child(3) {
+        width: 16%;
+    }
+
+    .fi-resource-news .fi-ta-table th:nth-child(4),
+    .fi-resource-news .fi-ta-table td:nth-child(4) {
+        width: 15%;
+    }
+
+    .fi-resource-news .fi-ta-table th:nth-child(5),
+    .fi-resource-news .fi-ta-table td:nth-child(5) {
+        width: 9%;
+    }
+
+    .fi-resource-users .fi-ta-table th:nth-child(1),
+    .fi-resource-users .fi-ta-table td:nth-child(1) {
+        width: 34%;
+    }
+
+    .fi-resource-users .fi-ta-table th:nth-child(2),
+    .fi-resource-users .fi-ta-table td:nth-child(2) {
+        width: 21%;
+    }
+
+    .fi-resource-users .fi-ta-table th:nth-child(3),
+    .fi-resource-users .fi-ta-table td:nth-child(3) {
+        width: 14%;
+    }
+
+    .fi-resource-users .fi-ta-table th:nth-child(4),
+    .fi-resource-users .fi-ta-table td:nth-child(4) {
+        width: 19%;
+    }
+
+    .fi-resource-users .fi-ta-table th:nth-child(5),
+    .fi-resource-users .fi-ta-table td:nth-child(5) {
+        width: 12%;
+    }
+
+    .bsa-resource-product__copy span {
+        overflow: hidden;
+        max-width: 280px;
+        color: var(--neo-dark-muted);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .fi-resource-list-records-page .fi-badge.fi-color-success {
+        background: var(--neo-green) !important;
+        color: var(--neo-ink) !important;
+    }
+
+    .fi-resource-list-records-page .fi-badge.fi-color-warning {
+        background: var(--neo-yellow) !important;
+        color: var(--neo-ink) !important;
+    }
+
+    .fi-resource-list-records-page .fi-badge.fi-color-gray {
+        background: #334155 !important;
+        color: var(--neo-dark-text) !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions {
+        gap: 8px !important;
+        justify-content: center !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions a,
+    .bsa-resource-list-card .fi-ta-actions button {
+        width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 0 !important;
+        background: var(--neo-dark-elevated) !important;
+        color: var(--neo-dark-text) !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions .fi-color-primary svg {
+        color: #93c5fd !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions .fi-color-danger svg {
+        color: #fb7185 !important;
     }
 
     .fi-resource-list-records-page .fi-pagination {
@@ -2910,6 +3195,20 @@
     .fi-resource-create-record-page .fi-icon-btn.fi-color-danger,
     .fi-resource-edit-record-page .fi-icon-btn.fi-color-danger {
         background: var(--neo-rose) !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions .fi-icon-btn,
+    .bsa-resource-list-card .fi-ta-actions .fi-icon-btn.fi-color-danger {
+        background: var(--neo-dark-elevated) !important;
+        color: var(--neo-dark-text) !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions .fi-icon-btn.fi-color-primary svg {
+        color: #93c5fd !important;
+    }
+
+    .bsa-resource-list-card .fi-ta-actions .fi-icon-btn.fi-color-danger svg {
+        color: #fb7185 !important;
     }
 
     .fi-resource-list-records-page .fi-dropdown-panel,

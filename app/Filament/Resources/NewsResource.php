@@ -151,14 +151,12 @@ class NewsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('featured_image_url')
-                    ->label('Image')
-                    ->square(),
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable()
+                Tables\Columns\ViewColumn::make('title')
+                    ->label('Article')
+                    ->view('filament.tables.columns.news-article')
+                    ->searchable(['title', 'excerpt'])
                     ->sortable()
-                    ->weight('bold')
-                    ->wrap(),
+                    ->extraAttributes(['class' => 'bsa-resource-product-cell']),
                 Tables\Columns\TextColumn::make('category.name')
                     ->badge()
                     ->sortable(),
@@ -189,9 +187,11 @@ class NewsResource extends Resource
                     ->relationship('author', 'name'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->iconButton(),
+                Tables\Actions\DeleteAction::make()->iconButton(),
             ])
+            ->actionsAlignment('center')
+            ->actionsColumnLabel('Actions')
             ->defaultSort(fn (Builder $query): Builder => $query->orderByDesc('created_at')->orderByDesc('id'));
     }
 

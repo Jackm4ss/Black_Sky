@@ -8,11 +8,41 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Auth;
 
 class ListUsers extends ListRecords
 {
     protected static string $resource = UserResource::class;
+
+    protected static string $view = 'filament.resources.list-records-shell';
+
+    public function getHeading(): string | Htmlable
+    {
+        return '';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function adminListMeta(): array
+    {
+        return [
+            'heroEyebrow' => 'Member Management',
+            'heroTitle' => 'User Management',
+            'heroDescription' => 'Manage member identity, registration source, country, and account activity.',
+            'totalLabel' => 'Total Members',
+            'totalValue' => UserResource::getEloquentQuery()->count(),
+            'cardEyebrow' => 'Member Directory',
+            'cardTitle' => 'Registered Member Catalog',
+            'action' => [
+                'type' => 'wire',
+                'label' => 'Broadcast Notification',
+                'wireClick' => "mountAction('broadcastNotification')",
+                'icon' => 'heroicon-o-megaphone',
+            ],
+        ];
+    }
 
     protected function getHeaderActions(): array
     {

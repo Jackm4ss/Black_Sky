@@ -253,7 +253,7 @@ export function AboutSection() {
                 marginBottom: "1.5rem",
               }}
             >
-              Black Sky Enterprise is Southeast Asia's most dynamic concert promoter and entertainment media company. Rooted in Malaysia, we engineer live experiences that ignite the senses and unite communities across the region.
+              Black Sky Enterprise is a Malaysia-based Event & Production Management company specializing in the entertainment industry. We provide professional services for concerts, entertainment events, media activities, artist management, and brand activations with a strong focus on creativity, coordination, and high-quality execution.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -269,7 +269,7 @@ export function AboutSection() {
                 marginBottom: "3rem",
               }}
             >
-              From internationally acclaimed arena concerts to groundbreaking music festivals, our productions set the standard for live entertainment in Southeast Asia — blending world-class production with cultural authenticity.
+              With experience in handling local and international entertainment projects, we work closely with artists, brands, media partners, and event organizers to deliver impactful experiences across Malaysia.
             </motion.p>
 
             {/* Highlights */}

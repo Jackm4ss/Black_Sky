@@ -21,7 +21,6 @@ class PublicPortfolioController extends Controller
                 $request->filled('category'),
                 fn (Builder $query) => $query->where('category', (string) $request->string('category')),
             )
-            ->orderBy('sort_order')
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->cursorPaginate($perPage);

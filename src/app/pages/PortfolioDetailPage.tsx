@@ -88,7 +88,7 @@ export function PortfolioDetailPage() {
           <section className="portfolio-detail-empty">
             <BriefcaseBusiness aria-hidden="true" />
             <strong>Project not found</strong>
-            <Link to="/#works">Back to Portfolio</Link>
+            <Link to="/portfolio">Back to Portfolio</Link>
           </section>
         ) : (
           <>
@@ -96,7 +96,7 @@ export function PortfolioDetailPage() {
               <img src={heroImage} alt="" aria-hidden="true" className="portfolio-detail-hero__bg" />
               <div className="portfolio-detail-hero__shade" />
               <div className="portfolio-detail-hero__inner">
-                <Link className="portfolio-detail-back" to="/#works">
+                <Link className="portfolio-detail-back" to="/portfolio">
                   <ArrowLeft aria-hidden="true" />
                   Back to Portfolio
                 </Link>
@@ -164,7 +164,7 @@ export function PortfolioDetailPage() {
                 <section className="portfolio-detail-section">
                   <div className="portfolio-detail-section__head">
                     <span style={{ color: accentColor }}>Gallery</span>
-                    <h2>Production Frames</h2>
+                    <h2>Captured Moments</h2>
                   </div>
                   <div className="portfolio-detail-gallery">
                     {gallery.map((image, index) => (

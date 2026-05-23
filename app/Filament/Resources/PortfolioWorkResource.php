@@ -10,10 +10,20 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PortfolioWorkResource extends Resource
 {
+    private const FEATURED_IMAGE_MAX_EDGE = 1600;
+
+    private const FEATURED_IMAGE_QUALITY = 82;
+
+    private const GALLERY_IMAGE_MAX_EDGE = 1400;
+
+    private const GALLERY_IMAGE_QUALITY = 84;
+
     protected static ?string $model = PortfolioWork::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
@@ -35,25 +45,17 @@ class PortfolioWorkResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Project')
-                    ->description('Manage public portfolio items shown on the landing page and detail page.')
+                    ->description('Add project details for the public portfolio.')
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->required()
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function (?string $state, Forms\Set $set, Forms\Get $get): void {
-                                if (blank($get('slug')) && filled($state)) {
-                                    $set('slug', Str::slug($state));
-                                }
-                            })
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
+                            ->placeholder('Neon Pulse Arena Concert')
                             ->maxLength(255),
                         Forms\Components\Select::make('category')
                             ->required()
                             ->native(false)
                             ->suffixIcon('heroicon-m-chevron-down')
+                            ->placeholder('Arena Concert')
                             ->options(fn (): array => collect([
                                 'Arena Concert',
                                 'Arena Tour',
@@ -70,27 +72,35 @@ class PortfolioWorkResource extends Resource
                             ->searchable(),
                         Forms\Components\TextInput::make('year')
                             ->required()
+                            ->placeholder('2026')
                             ->maxLength(20),
                         Forms\Components\TextInput::make('location')
                             ->required()
+                            ->placeholder('Kuala Lumpur, Malaysia')
                             ->maxLength(255),
                         Forms\Components\TextInput::make('role')
+                            ->placeholder('Full Production')
                             ->maxLength(255),
                         Forms\Components\TextInput::make('attendance')
+                            ->numeric()
+                            ->minValue(0)
+                            ->step(1)
+                            ->placeholder('18000')
                             ->maxLength(120),
                         Forms\Components\ColorPicker::make('accent_color')
                             ->label('Accent color')
                             ->required()
                             ->default('#f97316')
-                            ->helperText('Used for portfolio card glow and detail page highlights.')
                             ->columnSpanFull(),
                         Forms\Components\Textarea::make('excerpt')
                             ->required()
+                            ->placeholder('A sold-out arena concert with full production, fan operations, and content capture.')
                             ->rows(3)
                             ->maxLength(500)
                             ->columnSpanFull(),
                         Forms\Components\RichEditor::make('description')
                             ->required()
+                            ->placeholder('Describe the project, Black Sky role, and the final result.')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -126,7 +136,6 @@ class PortfolioWorkResource extends Resource
                             ->directory('portfolio')
                             ->visibility('public')
                             ->required(fn (string $operation): bool => $operation === 'create')
-                            ->helperText('Upload the main project artwork shown on the landing page and detail page.')
                             ->columnSpanFull(),
                         Forms\Components\Placeholder::make('current_gallery_images')
                             ->label('Current gallery')
@@ -149,7 +158,6 @@ class PortfolioWorkResource extends Resource
                             ->disk('public')
                             ->directory('portfolio/gallery')
                             ->visibility('public')
-                            ->helperText('Upload supporting project photos. Use at least three for a stronger detail page.')
                             ->columnSpanFull(),
                     ]),
 
@@ -166,12 +174,11 @@ class PortfolioWorkResource extends Resource
                             ->suffixIcon('heroicon-m-chevron-down')
                             ->default('draft'),
                         Forms\Components\DateTimePicker::make('published_at')
+                            ->native(false)
+                            ->displayFormat('M d, Y H:i')
                             ->seconds(false),
-                        Forms\Components\TextInput::make('sort_order')
-                            ->numeric()
-                            ->default(0),
                     ])
-                    ->columns(3),
+                    ->columns(2),
             ]);
     }
 
@@ -227,7 +234,7 @@ class PortfolioWorkResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
-            ->defaultSort('sort_order');
+            ->defaultSort('created_at', 'desc');
     }
 
     /**
@@ -236,8 +243,31 @@ class PortfolioWorkResource extends Resource
      */
     public static function normalizeFormData(array $data, ?PortfolioWork $record = null): array
     {
+        if (blank($data['slug'] ?? null)) {
+            $data['slug'] = filled($record?->slug)
+                ? $record->slug
+                : self::makeUniqueSlug((string) ($data['title'] ?? 'portfolio-work'), $record);
+        } else {
+            $data['slug'] = self::makeUniqueSlug((string) $data['slug'], $record);
+        }
+
+        if (array_key_exists('attendance', $data)) {
+            $attendance = preg_replace('/\D+/', '', (string) ($data['attendance'] ?? ''));
+            $data['attendance'] = $attendance !== '' ? $attendance : null;
+        }
+
         if (filled($data['featured_image_upload'] ?? null)) {
-            $data['featured_image'] = $data['featured_image_upload'];
+            $data['featured_image'] = self::compressPublicImage(
+                path: (string) $data['featured_image_upload'],
+                slug: (string) $data['slug'],
+                directory: 'portfolio',
+                maxEdge: self::FEATURED_IMAGE_MAX_EDGE,
+                quality: self::FEATURED_IMAGE_QUALITY,
+                field: 'featured_image_upload',
+                label: 'featured image',
+            );
+
+            self::deletePublicImage($record?->featured_image, 'portfolio/');
         }
 
         unset($data['featured_image_upload']);
@@ -246,15 +276,24 @@ class PortfolioWorkResource extends Resource
             $galleryImages = array_values(array_filter((array) $data['gallery_image_uploads']));
 
             if ($galleryImages !== []) {
-                $data['gallery_images'] = $galleryImages;
+                $data['gallery_images'] = collect($galleryImages)
+                    ->map(fn (string $path): string => self::compressPublicImage(
+                        path: $path,
+                        slug: (string) $data['slug'],
+                        directory: 'portfolio/gallery',
+                        maxEdge: self::GALLERY_IMAGE_MAX_EDGE,
+                        quality: self::GALLERY_IMAGE_QUALITY,
+                        field: 'gallery_image_uploads',
+                        label: 'gallery image',
+                    ))
+                    ->all();
+
+                collect((array) $record?->gallery_images)
+                    ->each(fn (mixed $path): bool => self::deletePublicImage(is_string($path) ? $path : null, 'portfolio/gallery/'));
             }
         }
 
         unset($data['gallery_image_uploads']);
-
-        if (blank($data['slug'] ?? null) && filled($data['title'] ?? null)) {
-            $data['slug'] = Str::slug((string) $data['title']);
-        }
 
         if (($data['status'] ?? null) === 'published' && blank($data['published_at'] ?? null)) {
             $data['published_at'] = now();
@@ -296,6 +335,120 @@ class PortfolioWorkResource extends Resource
         }
 
         return $data;
+    }
+
+    private static function compressPublicImage(
+        string $path,
+        string $slug,
+        string $directory,
+        int $maxEdge,
+        int $quality,
+        string $field,
+        string $label,
+    ): string {
+        @ini_set('memory_limit', '1024M');
+        @set_time_limit(120);
+
+        $path = ltrim($path, '/');
+        $disk = Storage::disk('public');
+
+        if (! $disk->exists($path)) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' upload could not be found. Please upload it again.',
+            ]);
+        }
+
+        $sourcePath = $disk->path($path);
+        $imageInfo = @getimagesize($sourcePath);
+
+        if ($imageInfo === false) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' file could not be read as an image.',
+            ]);
+        }
+
+        [$sourceWidth, $sourceHeight, $imageType] = $imageInfo;
+        $source = match ($imageType) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($sourcePath),
+            IMAGETYPE_PNG => @imagecreatefrompng($sourcePath),
+            IMAGETYPE_WEBP => @imagecreatefromwebp($sourcePath),
+            IMAGETYPE_GIF => @imagecreatefromgif($sourcePath),
+            default => false,
+        };
+
+        if (! $source) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' format is not supported. Please upload JPG, PNG, WEBP, or GIF.',
+            ]);
+        }
+
+        $scale = min(1, $maxEdge / max($sourceWidth, $sourceHeight));
+        $targetWidth = max(1, (int) round($sourceWidth * $scale));
+        $targetHeight = max(1, (int) round($sourceHeight * $scale));
+        $target = imagecreatetruecolor($targetWidth, $targetHeight);
+
+        imagealphablending($target, false);
+        imagesavealpha($target, true);
+        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, imagecolorallocatealpha($target, 0, 0, 0, 127));
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
+
+        $safeSlug = Str::slug($slug) ?: 'portfolio-work';
+        $relativePath = trim($directory, '/') . '/' . $safeSlug . '-' . Str::uuid() . '.webp';
+
+        $disk->makeDirectory(trim($directory, '/'));
+
+        $stored = @imagewebp($target, $disk->path($relativePath), $quality);
+
+        imagedestroy($source);
+        imagedestroy($target);
+
+        if (! $stored) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' could not be compressed. Please try another image.',
+            ]);
+        }
+
+        self::deletePublicImage($path, trim($directory, '/') . '/');
+
+        return $relativePath;
+    }
+
+    private static function deletePublicImage(?string $path, string $requiredPrefix): bool
+    {
+        if (blank($path)) {
+            return false;
+        }
+
+        $path = (string) $path;
+
+        if (Str::startsWith($path, ['/storage/'])) {
+            $path = Str::after($path, '/storage/');
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', 'data:']) || ! Str::startsWith($path, $requiredPrefix)) {
+            return false;
+        }
+
+        return Storage::disk('public')->delete($path);
+    }
+
+    private static function makeUniqueSlug(string $value, ?PortfolioWork $record = null): string
+    {
+        $baseSlug = Str::slug($value) ?: 'portfolio-work';
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (
+            PortfolioWork::query()
+                ->where('slug', $slug)
+                ->when($record, fn ($query) => $query->whereKeyNot($record->getKey()))
+                ->exists()
+        ) {
+            $slug = $baseSlug . '-' . $suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     public static function getPages(): array

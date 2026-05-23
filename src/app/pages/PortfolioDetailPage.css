@@ -8,7 +8,7 @@
 }
 
 .portfolio-detail-hero {
-  min-height: clamp(640px, 88vh, 880px);
+  min-height: clamp(600px, 82vh, 780px);
   position: relative;
   display: grid;
   align-items: end;
@@ -94,11 +94,11 @@
 }
 
 .portfolio-detail-hero h1 {
-  max-width: 1100px;
+  max-width: 1040px;
   margin: 16px 0 18px;
   color: #fff;
   font-family: "Barlow Condensed", sans-serif;
-  font-size: clamp(4.4rem, 12vw, 12rem);
+  font-size: clamp(4rem, 9vw, 9.8rem);
   font-weight: 900;
   letter-spacing: 0;
   line-height: 0.82;
@@ -132,13 +132,13 @@
   position: sticky;
   top: 108px;
   display: grid;
-  gap: 18px;
+  gap: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--portfolio-accent) 14%, transparent), rgba(168, 85, 247, 0.05)),
     rgba(255, 255, 255, 0.04);
-  padding: 22px;
+  padding: 20px;
 }
 
 .portfolio-detail-summary-card > span {
@@ -150,14 +150,14 @@
 
 .portfolio-detail-summary-card dl {
   display: grid;
-  gap: 18px;
+  gap: 16px;
   margin: 0;
 }
 
 .portfolio-detail-summary-card dl div {
   display: grid;
   gap: 6px;
-  padding-bottom: 18px;
+  padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -185,20 +185,29 @@
 .portfolio-detail-summary-card dd {
   margin: 0;
   color: #fff;
-  font-size: clamp(1.25rem, 2vw, 1.8rem);
+  font-size: clamp(1.05rem, 1.5vw, 1.45rem);
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 0.95;
+  line-height: 1.05;
 }
 
 .portfolio-detail-main {
   min-width: 0;
   display: grid;
-  gap: clamp(46px, 7vw, 82px);
+  gap: 18px;
+}
+
+.portfolio-detail-section {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--portfolio-accent) 12%, transparent), rgba(168, 85, 247, 0.045)),
+    rgba(255, 255, 255, 0.04);
+  padding: clamp(18px, 2.8vw, 28px);
 }
 
 .portfolio-detail-section__head {
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .portfolio-detail-section__head span,
@@ -215,10 +224,10 @@
   margin: 0;
   color: #fff;
   font-family: "Barlow Condensed", sans-serif;
-  font-size: clamp(2.6rem, 6vw, 6.2rem);
+  font-size: clamp(1.9rem, 3vw, 3.1rem);
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 0.88;
+  line-height: 0.95;
   text-transform: uppercase;
 }
 
@@ -230,20 +239,20 @@
 .portfolio-detail-copy li {
   color: rgba(255, 255, 255, 0.72);
   font-family: "Barlow", sans-serif;
-  font-size: 1.06rem;
+  font-size: 1rem;
   font-weight: 300;
-  line-height: 1.85;
+  line-height: 1.78;
 }
 
 .portfolio-detail-copy p {
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
 .portfolio-detail-copy h3 {
-  margin: 30px 0 14px;
+  margin: 26px 0 12px;
   color: #fff;
   font-family: "Barlow Condensed", sans-serif;
-  font-size: clamp(1.8rem, 3.6vw, 3rem);
+  font-size: clamp(1.45rem, 2.4vw, 2.1rem);
   font-weight: 900;
   letter-spacing: 0;
   line-height: 0.96;
@@ -266,7 +275,7 @@
 
 .portfolio-detail-gallery img {
   width: 100%;
-  min-height: 260px;
+  min-height: 220px;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
@@ -274,7 +283,7 @@
 
 .portfolio-detail-gallery img:first-child {
   grid-row: span 2;
-  min-height: 540px;
+  min-height: 460px;
 }
 
 .portfolio-detail-cta {
@@ -287,7 +296,7 @@
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--portfolio-accent) 18%, transparent), rgba(255, 183, 0, 0.06)),
     rgba(255, 255, 255, 0.035);
-  padding: clamp(24px, 4vw, 42px);
+  padding: clamp(20px, 3vw, 32px);
 }
 
 .portfolio-detail-cta span {
@@ -296,7 +305,7 @@
 
 .portfolio-detail-cta h2 {
   max-width: 720px;
-  font-size: clamp(2.4rem, 5vw, 5.5rem);
+  font-size: clamp(1.9rem, 3.5vw, 3.8rem);
 }
 
 .portfolio-detail-cta a {

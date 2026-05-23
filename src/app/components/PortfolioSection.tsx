@@ -13,7 +13,7 @@ const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1400&q=80";
 const cardDescriptionColor = "rgba(235,245,255,0.78)";
 const cardMetaColor = "rgba(226,238,255,0.68)";
-const placement: Array<Work["type"]> = ["feature", "tall", "square", "square", "banner"];
+const placement: Array<Work["type"]> = ["feature", "tall", "square", "square"];
 const DEFAULT_ACCENT = "#F97316";
 
 interface Work {
@@ -590,7 +590,7 @@ export function PortfolioSection() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const worksQuery = useQuery({
     queryKey: ["landing-portfolio"],
-    queryFn: () => getPortfolioWorks({ perPage: 8 }),
+    queryFn: () => getPortfolioWorks({ perPage: 4 }),
   });
   const works = useMemo(
     () => (worksQuery.data?.data ?? []).map(toWork),
@@ -713,7 +713,7 @@ export function PortfolioSection() {
               className="hidden xl:grid gap-3"
               style={{
                 gridTemplateColumns: "1fr 1fr 1fr",
-                gridTemplateRows: "360px 320px 220px",
+                gridTemplateRows: "360px 320px",
               }}
             >
               {works[0] && (
@@ -736,18 +736,13 @@ export function PortfolioSection() {
                   <SquareCard work={works[3]} delay={0.24} />
                 </div>
               )}
-              {works[4] && (
-                <div style={{ gridColumn: "1 / 4", gridRow: "3" }}>
-                  <BannerCard work={works[4]} delay={0.3} />
-                </div>
-              )}
             </div>
 
             <div
               className="hidden md:grid xl:hidden gap-4"
               style={{
                 gridTemplateColumns: "1fr 1fr",
-                gridTemplateRows: "340px 300px 300px 240px",
+                gridTemplateRows: "340px 300px 300px",
               }}
             >
               {works[0] && (
@@ -770,15 +765,10 @@ export function PortfolioSection() {
                   <SquareCard work={works[3]} delay={0.24} />
                 </div>
               )}
-              {works[4] && (
-                <div style={{ gridColumn: "1 / 3", gridRow: "4" }}>
-                  <FeatureCard work={works[4]} delay={0.3} />
-                </div>
-              )}
             </div>
 
             <div className="flex flex-col gap-4 md:hidden">
-              {works.slice(0, 5).map((work, index) => (
+              {works.slice(0, 4).map((work, index) => (
                 <div key={work.id} style={{ height: work.type === "tall" ? "430px" : "360px" }}>
                   {renderCard(work, index)}
                 </div>

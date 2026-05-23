@@ -85,6 +85,231 @@ vendor/bin/pint app routes tests
 
 There is no configured JavaScript lint, typecheck, or test script; use `npm run build` for frontend verification.
 
+## First VPS Deployment Notes
+
+Target VPS for the first production deployment:
+
+| Item | Detail |
+|---|---|
+| Hostname | `server.vimobe.net` |
+| Public IP | `84.247.144.89` |
+| OS | AlmaLinux 8.10 |
+| Virtualization | KVM |
+| CPU | 6 vCPU, AMD EPYC Processor |
+| RAM | 15 GiB total, about 10 GiB available at audit time |
+| Swap | None configured |
+| Disk | 200 GB total, root `/` about 194 GB |
+| Disk usage | About 50% used at audit time |
+
+This is enough for an initial single-server deployment if the app is kept conservative. Avoid running too many workers because there is no swap; memory spikes from image uploads should fail gracefully instead of pushing the VPS into OOM.
+
+Recommended first-pass services on this VPS:
+
+- Web server: Nginx or Apache in front of PHP-FPM.
+- PHP runtime: PHP 8.2+ with OPcache enabled.
+- Database: MySQL/MariaDB on the same VPS for the first deploy, then move out later if traffic grows.
+- Queue: Redis preferred; database queue is acceptable only for the first low-traffic launch.
+- Node.js: needed for `npm run build`, not needed as a long-running production service.
+- Scheduler: one Laravel scheduler entry only.
+
+Recommended PHP-FPM sizing for 6 vCPU / 16 GB RAM:
+
+```ini
+pm = dynamic
+pm.max_children = 24
+pm.start_servers = 6
+pm.min_spare_servers = 4
+pm.max_spare_servers = 10
+pm.max_requests = 500
+```
+
+If MySQL is also busy on the same VPS, start with `pm.max_children = 18` and increase after checking real memory usage. For image-heavy admin uploads, do not raise this too high; each active upload can temporarily use more memory during compression.
+
+Recommended PHP limits for the current upload policy:
+
+```ini
+memory_limit = 512M
+upload_max_filesize = 110M
+post_max_size = 110M
+max_execution_time = 120
+max_input_time = 120
+opcache.enable=1
+opcache.enable_cli=1
+opcache.validate_timestamps=0
+opcache.memory_consumption=256
+opcache.max_accelerated_files=20000
+```
+
+Recommended Nginx upload limit:
+
+```nginx
+client_max_body_size 110M;
+```
+
+Recommended Laravel production commands after pulling code and installing dependencies:
+
+```bash
+composer install --no-dev --optimize-autoloader
+npm ci
+npm run build
+php artisan migrate --force
+php artisan storage:link
+php artisan optimize
+```
+
+Recommended environment values for first deploy:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.example
+FRONTEND_URL=https://your-domain.example
+SANCTUM_STATEFUL_DOMAINS=your-domain.example
+SESSION_SECURE_COOKIE=true
+SESSION_ENCRYPT=true
+LOG_LEVEL=warning
+QUEUE_CONNECTION=redis
+CACHE_STORE=redis
+SESSION_DRIVER=redis
+```
+
+If Redis is not ready yet, keep `QUEUE_CONNECTION=database`, `CACHE_STORE=database`, and `SESSION_DRIVER=database` temporarily, but switch to Redis before heavier traffic or broadcasts.
+
+Recommended Supervisor queue workers for this VPS:
+
+```ini
+[program:blacksky-worker-default]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/Black_Sky/artisan queue:work redis --queue=default --sleep=3 --tries=3 --timeout=120 --memory=256
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/path/to/Black_Sky/storage/logs/worker-default.log
+stopwaitsecs=180
+
+[program:blacksky-worker-notifications]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/Black_Sky/artisan queue:work redis --queue=notifications --sleep=3 --tries=3 --timeout=120 --memory=256
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/path/to/Black_Sky/storage/logs/worker-notifications.log
+stopwaitsecs=180
+```
+
+For a database queue fallback, replace `redis` with `database` in both `queue:work` commands. Keep total queue workers around 4 processes at first. Increase only after checking CPU, memory, database load, and queue wait time.
+
+Recommended scheduler cron:
+
+```cron
+* * * * * cd /path/to/Black_Sky && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Basic bottleneck checks after deployment:
+
+```bash
+free -h
+df -h
+php artisan queue:failed
+php artisan about
+tail -f storage/logs/laravel.log
+```
+
+Operational notes:
+
+- Add 2-4 GB swap if possible; it is not a performance feature, but it gives the VPS a safety buffer during rare memory spikes.
+- Enable log rotation for Laravel logs and Supervisor worker logs.
+- Keep only one deployment build active at a time; do not run multiple `npm run build` processes on the VPS.
+- Keep uploads on `storage/app/public` for the first deploy, but plan object storage/CDN once media traffic grows.
+- Run `php artisan optimize:clear && php artisan optimize` after config or route changes.
+
+### No-Downtime Update Notes
+
+For future revisions and feature updates, use a release-directory deployment instead of editing the live folder directly. The web server should point to a stable `current` symlink, not to one fixed checkout folder.
+
+Recommended directory layout:
+
+```text
+/var/www/blacksky/
+  current -> /var/www/blacksky/releases/20260524013000
+  releases/
+    20260524013000/
+    20260525094500/
+  shared/
+    .env
+    storage/
+```
+
+Nginx should use:
+
+```nginx
+root /var/www/blacksky/current/public;
+```
+
+Deploy flow for a new release:
+
+```bash
+release="/var/www/blacksky/releases/$(date +%Y%m%d%H%M%S)"
+
+git clone --depth=1 git@github.com:your-org/your-repo.git "$release"
+cd "$release"
+
+ln -sfn /var/www/blacksky/shared/.env .env
+rm -rf storage
+ln -sfn /var/www/blacksky/shared/storage storage
+
+composer install --no-dev --optimize-autoloader
+npm ci
+npm run build
+
+php artisan migrate --force
+php artisan storage:link
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+
+ln -sfn "$release" /var/www/blacksky/current
+
+sudo systemctl reload nginx
+sudo systemctl reload php-fpm
+
+cd /var/www/blacksky/current
+php artisan queue:restart
+```
+
+Keep Supervisor worker commands pointed at `/var/www/blacksky/current/artisan`, not at a specific release folder. `php artisan queue:restart` lets existing jobs finish, then workers restart into the new release.
+
+No-downtime migration rules:
+
+- Only deploy backward-compatible migrations while old code can still receive traffic.
+- Add nullable columns first, deploy code that writes both old and new fields, backfill data, then remove old columns in a later release.
+- Do not rename/drop columns in the same release that starts using the new schema.
+- Avoid `php artisan down` for normal releases. Use it only for emergency maintenance.
+- Run destructive data changes as queued/background jobs where possible.
+
+Fast rollback:
+
+```bash
+previous="/var/www/blacksky/releases/20260524013000"
+ln -sfn "$previous" /var/www/blacksky/current
+sudo systemctl reload nginx
+sudo systemctl reload php-fpm
+cd /var/www/blacksky/current && php artisan queue:restart
+```
+
+Keep at least the latest 3-5 releases so rollback stays quick:
+
+```bash
+ls -dt /var/www/blacksky/releases/* | tail -n +6 | xargs -r rm -rf
+```
+
 ## Application Map
 
 - `routes/web.php` serves SEO-aware public pages and the SPA catch-all.

@@ -12,12 +12,19 @@ class EditNews extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return NewsResource::normalizeFormData($data);
+        return NewsResource::normalizeFormData($data, $this->record);
     }
 
     protected function getHeaderActions(): array
     {
+        return [];
+    }
+
+    protected function getFormActions(): array
+    {
         return [
+            $this->getSaveFormAction(),
+            $this->getCancelFormAction(),
             Actions\DeleteAction::make(),
         ];
     }

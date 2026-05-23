@@ -9,11 +9,18 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class NewsResource extends Resource
 {
+    private const FEATURED_IMAGE_MAX_EDGE = 1600;
+
+    private const FEATURED_IMAGE_QUALITY = 84;
+
     protected static ?string $model = BlogPost::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
@@ -39,16 +46,6 @@ class NewsResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->required()
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function (?string $state, Forms\Set $set, Forms\Get $get): void {
-                                if (blank($get('slug')) && filled($state)) {
-                                    $set('slug', Str::slug($state));
-                                }
-                            })
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Forms\Components\Textarea::make('excerpt')
                             ->rows(3)
@@ -79,7 +76,6 @@ class NewsResource extends Resource
                             ->required()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
-                                Forms\Components\TextInput::make('slug')->required()->maxLength(255),
                                 Forms\Components\Textarea::make('bio')->rows(3)->columnSpanFull(),
                                 Forms\Components\TextInput::make('photo')->label('Photo URL')->url()->maxLength(2048),
                                 Forms\Components\TextInput::make('email')->email()->maxLength(255),
@@ -92,7 +88,6 @@ class NewsResource extends Resource
                             ->required()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
-                                Forms\Components\TextInput::make('slug')->required()->maxLength(255),
                                 Forms\Components\Textarea::make('description')->rows(3)->columnSpanFull(),
                                 Forms\Components\Toggle::make('is_active')->default(true),
                             ]),
@@ -103,7 +98,6 @@ class NewsResource extends Resource
                             ->preload()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
-                                Forms\Components\TextInput::make('slug')->required()->maxLength(255),
                                 Forms\Components\Textarea::make('description')->rows(3)->columnSpanFull(),
                                 Forms\Components\Toggle::make('is_active')->default(true),
                             ])
@@ -118,7 +112,7 @@ class NewsResource extends Resource
                             ->content(fn (?BlogPost $record): HtmlString|string => filled($record?->featured_image_url)
                                 ? new HtmlString('<a class="bsa-current-media-link" href="' . e($record->featured_image_url) . '" target="_blank" rel="noopener">View current image</a>')
                                 : 'No featured image uploaded yet.')
-                            ->visible(fn (?BlogPost $record): bool => filled($record?->featured_image))
+                            ->visible(fn (?BlogPost $record): bool => filled($record))
                             ->columnSpanFull(),
                         Forms\Components\FileUpload::make('featured_image_upload')
                             ->label('Featured image')
@@ -143,48 +137,13 @@ class NewsResource extends Resource
                             ->required()
                             ->default('draft'),
                         Forms\Components\DateTimePicker::make('published_at')
+                            ->native(false)
                             ->seconds(false),
                         Forms\Components\DateTimePicker::make('scheduled_at')
+                            ->native(false)
                             ->seconds(false),
                     ])
                     ->columns(2),
-
-                Forms\Components\Section::make('SEO')
-                    ->description('PRD requires SEO metadata on public article detail pages.')
-                    ->schema([
-                        Forms\Components\TextInput::make('meta_title')
-                            ->maxLength(60),
-                        Forms\Components\TextInput::make('meta_keywords')
-                            ->maxLength(255),
-                        Forms\Components\Textarea::make('meta_description')
-                            ->maxLength(160)
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('canonical_url')
-                            ->url()
-                            ->maxLength(255),
-                        Forms\Components\Placeholder::make('current_og_image')
-                            ->label('Current Open Graph image')
-                            ->content(fn (?BlogPost $record): HtmlString|string => filled($record?->og_image_url)
-                                ? new HtmlString('<a class="bsa-current-media-link" href="' . e($record->og_image_url) . '" target="_blank" rel="noopener">View current share image</a>')
-                                : 'No Open Graph image set yet.')
-                            ->visible(fn (?BlogPost $record): bool => filled($record?->og_image))
-                            ->columnSpanFull(),
-                        Forms\Components\FileUpload::make('og_image_upload')
-                            ->label('Open Graph image')
-                            ->image()
-                            ->imageEditor()
-                            ->imageResizeMode('cover')
-                            ->imageResizeTargetWidth('1200')
-                            ->imageResizeTargetHeight('630')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->disk('public')
-                            ->directory('news/og')
-                            ->visibility('public')
-                            ->helperText('Optional. Leave empty to reuse the featured image.'),
-                    ])
-                    ->columns(2)
-                    ->collapsed(),
             ]);
     }
 
@@ -203,9 +162,6 @@ class NewsResource extends Resource
                 Tables\Columns\TextColumn::make('category.name')
                     ->badge()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('author.name')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -218,10 +174,6 @@ class NewsResource extends Resource
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime('M d, Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('view_count')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -240,14 +192,14 @@ class NewsResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
-            ->defaultSort('published_at', 'desc');
+            ->defaultSort(fn (Builder $query): Builder => $query->orderByDesc('created_at')->orderByDesc('id'));
     }
 
     /**
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    public static function normalizeFormData(array $data): array
+    public static function normalizeFormData(array $data, ?BlogPost $record = null): array
     {
         if (filled($data['featured_image_upload'] ?? null)) {
             $data['featured_image'] = $data['featured_image_upload'];
@@ -255,33 +207,187 @@ class NewsResource extends Resource
 
         unset($data['featured_image_upload']);
 
-        if (filled($data['og_image_upload'] ?? null)) {
-            $data['og_image'] = $data['og_image_upload'];
+        if (filled($data['title'] ?? null)) {
+            $data['slug'] = filled($record?->slug)
+                ? $record->slug
+                : self::makeUniqueSlug((string) $data['title'], $record);
         }
 
-        unset($data['og_image_upload']);
+        if (filled($data['featured_image'] ?? null)) {
+            $data['featured_image'] = self::compressPublicImage(
+                path: (string) $data['featured_image'],
+                slug: (string) ($data['slug'] ?? 'news-article'),
+                directory: 'news',
+                maxEdge: self::FEATURED_IMAGE_MAX_EDGE,
+                quality: self::FEATURED_IMAGE_QUALITY,
+                field: 'featured_image_upload',
+                label: 'featured image',
+            );
 
-        if (blank($data['slug'] ?? null) && filled($data['title'] ?? null)) {
-            $data['slug'] = Str::slug((string) $data['title']);
+            self::deletePublicImage($record?->featured_image, 'news/');
         }
 
         if (($data['status'] ?? null) === 'published' && blank($data['published_at'] ?? null)) {
             $data['published_at'] = now();
         }
 
-        if (blank($data['canonical_url'] ?? null) && filled($data['slug'] ?? null)) {
+        if (filled($data['slug'] ?? null)) {
             $data['canonical_url'] = url('/news/' . $data['slug']);
         }
 
-        if (blank($data['meta_title'] ?? null) && filled($data['title'] ?? null)) {
+        if (filled($data['title'] ?? null)) {
             $data['meta_title'] = Str::limit((string) $data['title'] . ' | Black Sky News', 60, '');
         }
 
-        if (blank($data['meta_description'] ?? null) && filled($data['excerpt'] ?? null)) {
-            $data['meta_description'] = Str::limit((string) $data['excerpt'], 160, '');
+        $descriptionSource = trim((string) ($data['excerpt'] ?? strip_tags((string) ($data['content'] ?? ''))));
+
+        if ($descriptionSource !== '') {
+            $data['meta_description'] = Str::limit($descriptionSource, 160, '');
         }
 
+        $data['meta_keywords'] = self::defaultMetaKeywords(
+            (string) ($data['title'] ?? ''),
+            (string) ($data['excerpt'] ?? '')
+        );
+
+        $data['og_image'] = filled($data['featured_image'] ?? null)
+            ? $data['featured_image']
+            : $record?->featured_image;
+
         return $data;
+    }
+
+    private static function defaultMetaKeywords(string $title, string $excerpt): string
+    {
+        $keywords = collect(preg_split('/[^A-Za-z0-9]+/', $title . ' ' . $excerpt) ?: [])
+            ->map(fn (string $word): string => Str::lower($word))
+            ->filter(fn (string $word): bool => Str::length($word) >= 4)
+            ->reject(fn (string $word): bool => in_array($word, ['black', 'news', 'sky'], true))
+            ->unique()
+            ->take(10)
+            ->values()
+            ->all();
+
+        $keywords = collect(array_merge(['Black Sky', 'news'], $keywords))
+            ->unique()
+            ->values()
+            ->all();
+
+        return Str::limit(implode(', ', $keywords), 255, '');
+    }
+
+    private static function makeUniqueSlug(string $title, ?BlogPost $record = null): string
+    {
+        $baseSlug = Str::slug($title) ?: 'news-article';
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (
+            BlogPost::query()
+                ->where('slug', $slug)
+                ->when($record, fn (Builder $query): Builder => $query->whereKeyNot($record->getKey()))
+                ->exists()
+        ) {
+            $slug = $baseSlug . '-' . $suffix;
+            $suffix++;
+        }
+
+        return $slug;
+    }
+
+    private static function compressPublicImage(
+        string $path,
+        string $slug,
+        string $directory,
+        int $maxEdge,
+        int $quality,
+        string $field,
+        string $label,
+    ): string {
+        @ini_set('memory_limit', '1024M');
+        @set_time_limit(120);
+
+        $path = ltrim($path, '/');
+        $disk = Storage::disk('public');
+
+        if (! $disk->exists($path)) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' upload could not be found. Please upload it again.',
+            ]);
+        }
+
+        $sourcePath = $disk->path($path);
+        $imageInfo = @getimagesize($sourcePath);
+
+        if ($imageInfo === false) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' file could not be read as an image.',
+            ]);
+        }
+
+        [$sourceWidth, $sourceHeight, $imageType] = $imageInfo;
+        $source = match ($imageType) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($sourcePath),
+            IMAGETYPE_PNG => @imagecreatefrompng($sourcePath),
+            IMAGETYPE_WEBP => @imagecreatefromwebp($sourcePath),
+            IMAGETYPE_GIF => @imagecreatefromgif($sourcePath),
+            default => false,
+        };
+
+        if (! $source) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' format is not supported. Please upload JPG, PNG, WEBP, or GIF.',
+            ]);
+        }
+
+        $scale = min(1, $maxEdge / max($sourceWidth, $sourceHeight));
+        $targetWidth = max(1, (int) round($sourceWidth * $scale));
+        $targetHeight = max(1, (int) round($sourceHeight * $scale));
+        $target = imagecreatetruecolor($targetWidth, $targetHeight);
+
+        imagealphablending($target, false);
+        imagesavealpha($target, true);
+        imagefilledrectangle($target, 0, 0, $targetWidth, $targetHeight, imagecolorallocatealpha($target, 0, 0, 0, 127));
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
+
+        $safeSlug = Str::slug($slug) ?: 'news-article';
+        $relativePath = trim($directory, '/') . '/' . $safeSlug . '-' . Str::uuid() . '.webp';
+
+        $disk->makeDirectory(trim($directory, '/'));
+
+        $stored = @imagewebp($target, $disk->path($relativePath), $quality);
+
+        imagedestroy($source);
+        imagedestroy($target);
+
+        if (! $stored) {
+            throw ValidationException::withMessages([
+                $field => 'The ' . $label . ' could not be compressed. Please try another image.',
+            ]);
+        }
+
+        self::deletePublicImage($path, trim($directory, '/') . '/');
+
+        return $relativePath;
+    }
+
+    private static function deletePublicImage(?string $path, string $requiredPrefix): bool
+    {
+        if (blank($path)) {
+            return false;
+        }
+
+        $path = (string) $path;
+
+        if (Str::startsWith($path, ['/storage/'])) {
+            $path = Str::after($path, '/storage/');
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', 'data:']) || ! Str::startsWith($path, $requiredPrefix)) {
+            return false;
+        }
+
+        return Storage::disk('public')->delete($path);
     }
 
     public static function getPages(): array

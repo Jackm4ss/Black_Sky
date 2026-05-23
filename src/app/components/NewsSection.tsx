@@ -242,8 +242,8 @@ export function NewsSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const postsQuery = useQuery({
-    queryKey: ["landing-news"],
-    queryFn: () => getBlogPosts({ perPage: 4 }),
+    queryKey: ["landing-news", "latest"],
+    queryFn: () => getBlogPosts({ perPage: 4, sort: "latest" }),
   });
   const articles = useMemo(
     () => (postsQuery.data?.data ?? []).map(toArticle),

@@ -15,8 +15,9 @@ class PublicBlogPostController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 9), 1), 18);
+        $sort = (string) $request->string('sort', 'published');
 
-        $posts = $this->publishedPostsQuery()
+        $postsQuery = $this->publishedPostsQuery()
             ->select([
                 'id',
                 'title',
@@ -33,6 +34,7 @@ class PublicBlogPostController extends Controller
                 'view_count',
                 'published_at',
                 'updated_at',
+                'created_at',
             ])
             ->with([
                 'author:id,name,slug,bio,photo',
@@ -53,10 +55,15 @@ class PublicBlogPostController extends Controller
                     'tags',
                     fn (Builder $query) => $query->where('slug', (string) $request->string('tag')),
                 ),
-            )
-            ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->cursorPaginate($perPage);
+            );
+
+        if ($sort === 'latest') {
+            $postsQuery->orderByDesc('created_at')->orderByDesc('id');
+        } else {
+            $postsQuery->orderByDesc('published_at')->orderByDesc('id');
+        }
+
+        $posts = $postsQuery->cursorPaginate($perPage);
 
         return response()->json([
             'data' => $posts->getCollection()->map(fn (BlogPost $post): array => $this->postSummary($post))->values(),

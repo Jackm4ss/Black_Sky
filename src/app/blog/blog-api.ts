@@ -54,6 +54,7 @@ export type BlogPostQuery = {
   tag?: string;
   cursor?: string;
   perPage?: number;
+  sort?: "published" | "latest";
 };
 
 export async function getBlogPosts(query: BlogPostQuery = {}) {
@@ -63,6 +64,7 @@ export async function getBlogPosts(query: BlogPostQuery = {}) {
   if (query.category) params.set("category", query.category);
   if (query.tag) params.set("tag", query.tag);
   if (query.cursor) params.set("cursor", query.cursor);
+  if (query.sort) params.set("sort", query.sort);
   params.set("per_page", String(query.perPage ?? 9));
 
   const { data } = await http.get<BlogPostsResponse>(`/api/v1/news?${params}`);

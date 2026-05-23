@@ -901,7 +901,6 @@ html {
    │   ├── components/
    │   │   ├── ui/          # Reusable UI components
    │   │   ├── sections/    # Page sections
-   │   │   └── figma/       # Design-specific components
    ├── assets/              # Images, fonts, etc.
    ├── styles/              # Global styles
    │   ├── fonts.css
@@ -932,7 +931,6 @@ html {
 ## 📚 Resources
 
 ### Design Tools
-- **Figma**: Design mockups dan prototypes
 - **ColorBox**: Color palette generation
 - **Type Scale**: Typography scale calculator
 

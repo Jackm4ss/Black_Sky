@@ -357,7 +357,6 @@ PHPUnit uses in-memory SQLite and array cache/session/queue from `phpunit.xml`.
 ## Frontend Notes
 
 - Use `@/` imports for `src/`.
-- `figma:asset/<file>` imports resolve to `src/assets/<file>` in `vite.config.ts`.
 - Keep both the React and Tailwind Vite plugins enabled; they are required by the current build flow.
 - Check `DESIGN.md` before user-facing UI changes.
 

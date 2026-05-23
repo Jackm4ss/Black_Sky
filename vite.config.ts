@@ -6,25 +6,12 @@ import laravel from 'laravel-vite-plugin'
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
 
-function figmaAssetResolver() {
-  return {
-    name: 'figma-asset-resolver',
-    resolveId(id) {
-      if (id.startsWith('figma:asset/')) {
-        const filename = id.replace('figma:asset/', '')
-        return path.resolve(__dirname, 'src/assets', filename)
-      }
-    },
-  }
-}
-
 export default defineConfig({
   plugins: [
     laravel({
       input: ['src/main.tsx', 'src/filament-auth-shape-grid.tsx', 'src/filament-admin.ts'],
       refresh: ['app/**', 'config/**', 'resources/views/**', 'routes/**', 'src/**'],
     }),
-    figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if
     // Tailwind is not being actively used – do not remove them
     react(),

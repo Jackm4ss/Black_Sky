@@ -30,17 +30,16 @@
 - Filament admin is mounted at `/admin`; resources/pages live under `app/Filament`.
 
 ## Frontend Quirks
-- `@/` resolves to `src/`; `figma:asset/<file>` resolves to `src/assets/<file>` via `vite.config.ts`.
+- `@/` resolves to `src/`.
 - Keep both Vite React and Tailwind plugins; `vite.config.ts` notes Make depends on them even when Tailwind is not actively changed.
 - Check `DESIGN.md` before changing user-facing UI; it contains the project tokens and component patterns.
+- Rich HTML is sanitized on both sides: keep `app/Support/RichContentSanitizer.php` and `src/app/lib/sanitize-rich-html.ts` allowlists aligned before using `dangerouslySetInnerHTML`.
 
 ## Testing Notes
 - PHPUnit uses in-memory SQLite and array cache/session/queue from `phpunit.xml`.
 - Feature tests that render `view('app')` without built assets should call `$this->withoutVite()`.
 - Public page changes often need all three surfaces updated: API controller/resource, SPA route/page, and `routes/web.php` SEO metadata.
+- For deployment work, use `README.md` First VPS Deployment Notes and No-Downtime Update Notes; production deploys should use release directories, a `current` symlink, and `php artisan queue:restart`.
 
 ## Commit Attribution
-AI commits MUST include:
-```
-Co-Authored-By: (the agent model's name and attribution byline)
-```
+- Do not add AI `Co-Authored-By` trailers unless the user explicitly asks for them.

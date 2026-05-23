@@ -10,6 +10,13 @@ class EditPortfolioWork extends EditRecord
 {
     protected static string $resource = PortfolioWorkResource::class;
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['published_time'] = $this->record->published_at?->format('H:i');
+
+        return $data;
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         return PortfolioWorkResource::normalizeFormData($data, $this->record);

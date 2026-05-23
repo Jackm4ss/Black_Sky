@@ -10,6 +10,14 @@ class EditNews extends EditRecord
 {
     protected static string $resource = NewsResource::class;
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['published_time'] = $this->record->published_at?->format('H:i');
+        $data['scheduled_time'] = $this->record->scheduled_at?->format('H:i');
+
+        return $data;
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         return NewsResource::normalizeFormData($data, $this->record);

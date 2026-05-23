@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
@@ -145,15 +146,44 @@ class NewsResource extends Resource
                                 'archived' => 'Archived',
                             ])
                             ->required()
-                            ->default('draft'),
-                        Forms\Components\DateTimePicker::make('published_at')
+                            ->default('draft')
+                            ->columnSpanFull(),
+                        Forms\Components\DatePicker::make('published_at')
+                            ->label('Published date')
                             ->native(false)
+                            ->displayFormat('M d, Y')
                             ->suffixIcon('heroicon-m-calendar', isInline: true)
-                            ->seconds(false),
-                        Forms\Components\DateTimePicker::make('scheduled_at')
+                            ->placeholder('Pick a date'),
+                        Forms\Components\ViewField::make('published_time')
+                            ->label('Published time')
+                            ->id('bsa-news-published-time')
+                            ->view('filament.forms.components.admin-time-picker')
+                            ->viewData([
+                                'emptyLabel' => 'Pick published time',
+                                'ariaLabel' => 'Select published time',
+                                'dialogTitle' => 'Select published time',
+                                'dialogDescription' => 'Choose the hour and minute for publishing.',
+                            ])
+                            ->live()
+                            ->rules(['nullable', 'date_format:H:i']),
+                        Forms\Components\DatePicker::make('scheduled_at')
+                            ->label('Scheduled date')
                             ->native(false)
+                            ->displayFormat('M d, Y')
                             ->suffixIcon('heroicon-m-calendar', isInline: true)
-                            ->seconds(false),
+                            ->placeholder('Pick a date'),
+                        Forms\Components\ViewField::make('scheduled_time')
+                            ->label('Scheduled time')
+                            ->id('bsa-news-scheduled-time')
+                            ->view('filament.forms.components.admin-time-picker')
+                            ->viewData([
+                                'emptyLabel' => 'Pick scheduled time',
+                                'ariaLabel' => 'Select scheduled time',
+                                'dialogTitle' => 'Select scheduled time',
+                                'dialogDescription' => 'Choose the hour and minute for scheduling.',
+                            ])
+                            ->live()
+                            ->rules(['nullable', 'date_format:H:i']),
                     ])
                     ->columns(2),
             ]);
@@ -219,6 +249,9 @@ class NewsResource extends Resource
 
         unset($data['featured_image_upload']);
 
+        self::combineDateAndTime($data, 'published_at', 'published_time');
+        self::combineDateAndTime($data, 'scheduled_at', 'scheduled_time');
+
         if (filled($data['title'] ?? null)) {
             $data['slug'] = filled($record?->slug)
                 ? $record->slug
@@ -272,6 +305,28 @@ class NewsResource extends Resource
             : $record?->featured_image;
 
         return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function combineDateAndTime(array &$data, string $dateField, string $timeField): void
+    {
+        $date = $data[$dateField] ?? null;
+        $time = $data[$timeField] ?? null;
+
+        unset($data[$timeField]);
+
+        if (blank($date)) {
+            $data[$dateField] = null;
+
+            return;
+        }
+
+        $datePart = Carbon::parse($date)->toDateString();
+        $timePart = filled($time) ? Carbon::parse($time)->format('H:i') : '00:00';
+
+        $data[$dateField] = Carbon::createFromFormat('Y-m-d H:i', "{$datePart} {$timePart}");
     }
 
     private static function defaultMetaKeywords(string $title, string $excerpt): string

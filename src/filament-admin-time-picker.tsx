@@ -13,6 +13,10 @@ type TimeValue = {
 type TimePickerProps = {
   inputId: string;
   value: string;
+  emptyLabel?: string;
+  ariaLabel?: string;
+  dialogTitle?: string;
+  dialogDescription?: string;
 };
 
 type DialStyle = React.CSSProperties & {
@@ -55,8 +59,8 @@ function toInputValue(time: TimeValue | undefined): string {
   return time ? `${pad(time.hour)}:${pad(time.minute)}` : "";
 }
 
-function formatTimeLabel(time: TimeValue | undefined): string {
-  return time ? toInputValue(time) : "Pick start time";
+function formatTimeLabel(time: TimeValue | undefined, emptyLabel: string): string {
+  return time ? toInputValue(time) : emptyLabel;
 }
 
 function syncInput(inputId: string, value: string): void {
@@ -92,7 +96,14 @@ function getHandStyle(time: TimeValue, activePart: "hour" | "minute"): DialStyle
   };
 }
 
-function TimePicker({ inputId, value }: TimePickerProps) {
+function TimePicker({
+  inputId,
+  value,
+  emptyLabel = "Pick start time",
+  ariaLabel = "Select start time",
+  dialogTitle = "Select start time",
+  dialogDescription = "Choose the time shown on the public event schedule.",
+}: TimePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedTime, setSelectedTime] = React.useState<TimeValue | undefined>(() => parseTimeValue(value));
   const [draftTime, setDraftTime] = React.useState<TimeValue>(() => parseTimeValue(value) ?? defaultTime);
@@ -182,24 +193,24 @@ function TimePicker({ inputId, value }: TimePickerProps) {
           type="button"
           className="bsa-time-picker-trigger"
           data-empty={!selectedTime}
-          aria-label="Select start time"
+          aria-label={ariaLabel}
         >
           <ClockIcon aria-hidden="true" />
-          <span>{formatTimeLabel(selectedTime)}</span>
+          <span>{formatTimeLabel(selectedTime, emptyLabel)}</span>
           <ChevronDownIcon aria-hidden="true" />
         </button>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="bsa-time-picker-overlay" />
-        <DialogPrimitive.Content className="bsa-time-picker-dialog" aria-describedby="bsa-time-picker-description">
+        <DialogPrimitive.Content className="bsa-time-picker-dialog" aria-describedby={undefined}>
           <header className="bsa-time-picker-header">
             <div>
               <DialogPrimitive.Title className="bsa-time-picker-title">
-                Select start time
+                {dialogTitle}
               </DialogPrimitive.Title>
-              <DialogPrimitive.Description id="bsa-time-picker-description" className="bsa-time-picker-description">
-                Choose the time shown on the public event schedule.
-              </DialogPrimitive.Description>
+              <p className="bsa-time-picker-description">
+                {dialogDescription}
+              </p>
             </div>
             <DialogPrimitive.Close className="bsa-time-picker-close" aria-label="Close time picker">
               <XIcon aria-hidden="true" />
@@ -332,6 +343,15 @@ export function mountAdminTimePickers(): void {
       roots.set(element, root);
     }
 
-    root.render(<TimePicker inputId={inputId} value={input.value} />);
+    root.render(
+      <TimePicker
+        inputId={inputId}
+        value={input.value}
+        emptyLabel={element.dataset.timeEmptyLabel}
+        ariaLabel={element.dataset.timeAriaLabel}
+        dialogTitle={element.dataset.timeTitle}
+        dialogDescription={element.dataset.timeDescription}
+      />,
+    );
   });
 }

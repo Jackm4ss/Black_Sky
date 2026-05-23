@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
@@ -192,11 +193,26 @@ class PortfolioWorkResource extends Resource
                             ->required()
                             ->native(false)
                             ->suffixIcon('heroicon-m-chevron-down')
-                            ->default('draft'),
-                        Forms\Components\DateTimePicker::make('published_at')
+                            ->default('draft')
+                            ->columnSpanFull(),
+                        Forms\Components\DatePicker::make('published_at')
+                            ->label('Published date')
                             ->native(false)
-                            ->displayFormat('M d, Y H:i')
-                            ->seconds(false),
+                            ->displayFormat('M d, Y')
+                            ->suffixIcon('heroicon-m-calendar', isInline: true)
+                            ->placeholder('Pick a date'),
+                        Forms\Components\ViewField::make('published_time')
+                            ->label('Published time')
+                            ->id('bsa-portfolio-published-time')
+                            ->view('filament.forms.components.admin-time-picker')
+                            ->viewData([
+                                'emptyLabel' => 'Pick published time',
+                                'ariaLabel' => 'Select published time',
+                                'dialogTitle' => 'Select published time',
+                                'dialogDescription' => 'Choose the hour and minute for publishing.',
+                            ])
+                            ->live()
+                            ->rules(['nullable', 'date_format:H:i']),
                     ])
                     ->columns(2),
             ]);
@@ -263,6 +279,8 @@ class PortfolioWorkResource extends Resource
      */
     public static function normalizeFormData(array $data, ?PortfolioWork $record = null): array
     {
+        self::combineDateAndTime($data, 'published_at', 'published_time');
+
         if (blank($data['slug'] ?? null)) {
             $data['slug'] = filled($record?->slug)
                 ? $record->slug
@@ -370,6 +388,28 @@ class PortfolioWorkResource extends Resource
     private static function deletePublicImage(?string $path, string $requiredPrefix): bool
     {
         return app(SafeImageCompressor::class)->deletePublicPath($path, $requiredPrefix);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function combineDateAndTime(array &$data, string $dateField, string $timeField): void
+    {
+        $date = $data[$dateField] ?? null;
+        $time = $data[$timeField] ?? null;
+
+        unset($data[$timeField]);
+
+        if (blank($date)) {
+            $data[$dateField] = null;
+
+            return;
+        }
+
+        $datePart = Carbon::parse($date)->toDateString();
+        $timePart = filled($time) ? Carbon::parse($time)->format('H:i') : '00:00';
+
+        $data[$dateField] = Carbon::createFromFormat('Y-m-d H:i', "{$datePart} {$timePart}");
     }
 
     private static function makeUniqueSlug(string $value, ?PortfolioWork $record = null): string

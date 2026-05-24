@@ -7,7 +7,7 @@ Laravel 11 and React 18 SPA monolith for Black Sky Enterprise event, news, portf
 - Backend: Laravel 11, PHP 8.2+, Fortify, Sanctum, Spatie Permission, Filament 3
 - Frontend: React 18, Vite, React Router 7, TanStack Query, React Hook Form, Zod
 - Styling: Tailwind CSS 4, Radix UI primitives, custom design system in `DESIGN.md`
-- Local defaults: SQLite, database-backed session/cache/queue, log mailer
+- Local defaults: SQLite, database-backed session/cache/queue, log mailer, Scout collection search
 
 ## Requirements
 
@@ -15,6 +15,7 @@ Laravel 11 and React 18 SPA monolith for Black Sky Enterprise event, news, portf
 - Composer
 - Node.js and npm
 - SQLite for local development
+- Production services: Redis, Meilisearch, and a real mail transport
 
 ## Setup
 
@@ -85,6 +86,27 @@ vendor/bin/pint app routes tests
 
 There is no configured JavaScript lint, typecheck, or test script; use `npm run build` for frontend verification.
 
+## Queues, Search, And Mail
+
+Local development intentionally stays lightweight:
+
+- `QUEUE_CONNECTION=database`, `CACHE_STORE=database`, and `SESSION_DRIVER=database`
+- `MAIL_MAILER=log`
+- `SCOUT_DRIVER=collection`
+
+Production is stricter. `App\Support\ProductionServices` checks `APP_ENV=production` during boot and fails fast unless Redis, Meilisearch, and a real mail transport are configured. Keep `BLACK_SKY_ENFORCE_PRODUCTION_SERVICES=true` for production deploys.
+
+Queued work currently includes member notification broadcasts and verification emails on the `notifications` queue. Production workers should run both `default` and `notifications`.
+
+Public event, news, and portfolio search use Laravel Scout. After content model or search setting changes, sync/import indexes:
+
+```bash
+php artisan scout:sync-index-settings
+php artisan scout:import "App\Models\Event"
+php artisan scout:import "App\Models\BlogPost"
+php artisan scout:import "App\Models\PortfolioWork"
+```
+
 ## First VPS Deployment Notes
 
 Target VPS for the first production deployment:
@@ -108,7 +130,9 @@ Recommended first-pass services on this VPS:
 - Web server: Nginx or Apache in front of PHP-FPM.
 - PHP runtime: PHP 8.2+ with OPcache enabled.
 - Database: MySQL/MariaDB on the same VPS for the first deploy, then move out later if traffic grows.
-- Queue: Redis preferred; database queue is acceptable only for the first low-traffic launch.
+- Queue/cache/session: Redis is required in production.
+- Search: Meilisearch is required in production for public search indexes.
+- Mail: SMTP or another real mail transport is required in production.
 - Node.js: needed for `npm run build`, not needed as a long-running production service.
 - Scheduler: one Laravel scheduler entry only.
 
@@ -154,6 +178,10 @@ npm ci
 npm run build
 php artisan migrate --force
 php artisan storage:link
+php artisan scout:sync-index-settings
+php artisan scout:import "App\Models\Event"
+php artisan scout:import "App\Models\BlogPost"
+php artisan scout:import "App\Models\PortfolioWork"
 php artisan optimize
 ```
 
@@ -171,9 +199,20 @@ LOG_LEVEL=warning
 QUEUE_CONNECTION=redis
 CACHE_STORE=redis
 SESSION_DRIVER=redis
+SCOUT_DRIVER=meilisearch
+SCOUT_QUEUE=true
+MEILISEARCH_HOST=http://127.0.0.1:7700
+MEILISEARCH_KEY=change-me
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=your-smtp-user
+MAIL_PASSWORD=your-smtp-password
+MAIL_FROM_ADDRESS=noreply@your-domain.example
+BLACK_SKY_ENFORCE_PRODUCTION_SERVICES=true
 ```
 
-If Redis is not ready yet, keep `QUEUE_CONNECTION=database`, `CACHE_STORE=database`, and `SESSION_DRIVER=database` temporarily, but switch to Redis before heavier traffic or broadcasts.
+When `APP_ENV=production`, the app fails fast unless Redis, Meilisearch, and a real mailer are configured. Local and testing environments can keep the lightweight defaults.
 
 Recommended Supervisor queue workers for this VPS:
 
@@ -203,7 +242,7 @@ stdout_logfile=/path/to/Black_Sky/storage/logs/worker-notifications.log
 stopwaitsecs=180
 ```
 
-For a database queue fallback, replace `redis` with `database` in both `queue:work` commands. Keep total queue workers around 4 processes at first. Increase only after checking CPU, memory, database load, and queue wait time.
+Keep total queue workers around 4 processes at first. Increase only after checking CPU, memory, Redis queue wait time, and mail/search indexing throughput.
 
 Recommended scheduler cron:
 
@@ -218,6 +257,7 @@ free -h
 df -h
 php artisan queue:failed
 php artisan about
+php artisan scout:sync-index-settings
 tail -f storage/logs/laravel.log
 ```
 
@@ -270,6 +310,10 @@ npm run build
 
 php artisan migrate --force
 php artisan storage:link
+php artisan scout:sync-index-settings
+php artisan scout:import "App\Models\Event"
+php artisan scout:import "App\Models\BlogPost"
+php artisan scout:import "App\Models\PortfolioWork"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

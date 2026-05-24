@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Notifications\QueuedVerifyEmail;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -14,7 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
@@ -66,6 +68,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $panel->getId() === 'admin'
             && $this->is_active
             && $this->hasRole('admin');
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new QueuedVerifyEmail);
     }
 
     public function bookmarks(): HasMany

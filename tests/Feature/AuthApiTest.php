@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Event;
 use App\Models\User;
+use App\Notifications\QueuedVerifyEmail;
 use Database\Seeders\EventSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
@@ -41,7 +43,7 @@ class AuthApiTest extends TestCase
         $this->assertSame('tiktok', $user->registration_source);
         $this->assertSame('https://www.tiktok.com/@blacksky', $user->registration_referrer);
 
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, QueuedVerifyEmail::class);
 
         $this->getJson('/api/v1/me/dashboard')->assertForbidden();
     }
@@ -63,7 +65,7 @@ class AuthApiTest extends TestCase
         $this->assertStringContainsString('images/black-sky-logo.png', $html);
         $this->assertStringContainsString('alt="Black Sky"', $html);
         $this->assertStringContainsString('Welcome to Black Sky', $html);
-        $this->assertStringContainsString('api/verify-email/' . $user->id, $html);
+        $this->assertStringContainsString('api/verify-email/'.$user->id, $html);
         $this->assertStringContainsString('Verify Email Address', $html);
     }
 
@@ -93,7 +95,17 @@ class AuthApiTest extends TestCase
 
         $this->assertGreaterThan(0, $retryAfter);
         $this->assertLessThanOrEqual(35, $retryAfter);
-        Notification::assertSentToTimes($user, VerifyEmail::class, 1);
+        Notification::assertSentToTimes($user, QueuedVerifyEmail::class, 1);
+    }
+
+    public function test_verification_email_notification_is_queued(): void
+    {
+        $notification = new QueuedVerifyEmail;
+
+        $this->assertInstanceOf(ShouldQueue::class, $notification);
+        $this->assertSame('notifications', $notification->queue);
+        $this->assertSame(3, $notification->tries);
+        $this->assertSame(120, $notification->timeout);
     }
 
     public function test_verification_link_marks_user_email_verified_without_login(): void

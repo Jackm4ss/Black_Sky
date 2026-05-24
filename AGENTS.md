@@ -18,9 +18,15 @@
 | Local DB reset | `php artisan migrate:fresh --seed` |
 
 ## Local Environment
-- `.env.example` defaults to SQLite plus database-backed session/cache/queue; `composer dev` starts the queue listener needed for queued work.
+- `.env.example` defaults to SQLite plus database-backed session/cache/queue, log mailer, and Scout collection search.
 - `composer dev` runs Laravel on `http://127.0.0.1:8000` and Vite on `http://127.0.0.1:5173`; both ports are in `SANCTUM_STATEFUL_DOMAINS`.
 - `DatabaseSeeder` creates the admin from `BLACK_SKY_ADMIN_*`; defaults are `admin@blacksky.test` / `password`.
+
+## Production Services
+- Production must use Redis for queue/cache/session, Meilisearch for Scout search, and a real mail transport.
+- `App\Support\ProductionServices` fails boot in `APP_ENV=production` when required services are missing; do not weaken this for deploy fixes.
+- Public search uses Scout/Meilisearch through `App\Support\PublicSearch`; local/testing may keep database or collection fallback.
+- Verification email and member broadcasts use the `notifications` queue; production workers must include `default` and `notifications`.
 
 ## Architecture
 - Laravel 11 API + React SPA monolith; `routes/web.php` adds SEO metadata for public pages before the SPA catch-all.
@@ -39,6 +45,7 @@
 - PHPUnit uses in-memory SQLite and array cache/session/queue from `phpunit.xml`.
 - Feature tests that render `view('app')` without built assets should call `$this->withoutVite()`.
 - Public page changes often need all three surfaces updated: API controller/resource, SPA route/page, and `routes/web.php` SEO metadata.
+- Search model changes may need `php artisan scout:sync-index-settings` and `php artisan scout:import "App\Models\<Model>"` in deployment docs.
 - For deployment work, use `README.md` First VPS Deployment Notes and No-Downtime Update Notes; production deploys should use release directories, a `current` symlink, and `php artisan queue:restart`.
 
 ## Commit Attribution

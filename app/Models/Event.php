@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Laravel\Scout\Searchable;
 
 class Event extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'title',
@@ -62,7 +63,7 @@ class Event extends Model
             return $query->whereFullText(['title', 'subtitle', 'venue', 'city', 'genre'], $term);
         }
 
-        $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $term) . '%';
+        $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
 
         return $query->where(function (Builder $query) use ($like): void {
             $query
@@ -73,6 +74,48 @@ class Event extends Model
                 ->orWhere('genre', 'like', $like)
                 ->orWhere('status', 'like', $like);
         });
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === 'published'
+            && $this->published_at !== null
+            && $this->published_at->lte(now());
+    }
+
+    public function searchableAs(): string
+    {
+        return 'events';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'title' => $this->title,
+            'slug' => $this->slug,
+            'subtitle' => $this->subtitle,
+            'venue' => $this->venue,
+            'city' => $this->city,
+            'country_code' => $this->country_code,
+            'genre' => $this->genre,
+            'status' => $this->status,
+            'is_sold_out' => (bool) $this->is_sold_out,
+            'start_date' => $this->start_date?->toDateString(),
+            'published_at' => $this->published_at?->timestamp,
+            'created_at' => $this->created_at?->timestamp,
+            'searchable_text' => trim(implode(' ', array_filter([
+                $this->title,
+                $this->subtitle,
+                $this->venue,
+                $this->city,
+                $this->genre,
+                $this->status,
+            ]))),
+        ];
     }
 
     public function scopeStartingFrom(Builder $query, ?string $date): Builder
@@ -112,7 +155,7 @@ class Event extends Model
         }
 
         if ($this->end_date && ! $this->start_date->isSameDay($this->end_date)) {
-            return $this->start_date->format('M d') . '-' . $this->end_date->format('d, Y');
+            return $this->start_date->format('M d').'-'.$this->end_date->format('d, Y');
         }
 
         return $this->start_date->format('M d, Y');

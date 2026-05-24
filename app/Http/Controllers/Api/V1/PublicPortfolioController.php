@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\PortfolioWork;
+use App\Support\PublicSearch;
 use App\Support\RichContentSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -11,15 +12,21 @@ use Illuminate\Http\Request;
 
 class PublicPortfolioController extends Controller
 {
-    public function __construct(private readonly RichContentSanitizer $contentSanitizer) {}
+    public function __construct(
+        private readonly RichContentSanitizer $contentSanitizer,
+        private readonly PublicSearch $publicSearch,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 8), 1), 18);
         $baseQuery = $this->publishedPortfolioQuery();
 
-        $works = (clone $baseQuery)
-            ->search((string) $request->string('search'))
+        $works = $this->publicSearch->apply(
+            clone $baseQuery,
+            PortfolioWork::class,
+            (string) $request->string('search'),
+        )
             ->when(
                 $request->filled('category'),
                 fn (Builder $query) => $query->where('category', (string) $request->string('category')),

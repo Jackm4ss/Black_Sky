@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\BlogTag;
+use App\Support\PublicSearch;
 use App\Support\RichContentSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -13,38 +14,44 @@ use Illuminate\Http\Request;
 
 class PublicBlogPostController extends Controller
 {
-    public function __construct(private readonly RichContentSanitizer $contentSanitizer) {}
+    public function __construct(
+        private readonly RichContentSanitizer $contentSanitizer,
+        private readonly PublicSearch $publicSearch,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 9), 1), 18);
         $sort = (string) $request->string('sort', 'published');
 
-        $postsQuery = $this->publishedPostsQuery()
-            ->select([
-                'id',
-                'title',
-                'slug',
-                'excerpt',
-                'content',
-                'featured_image',
-                'og_image',
-                'meta_title',
-                'meta_description',
-                'status',
-                'author_id',
-                'category_id',
-                'view_count',
-                'published_at',
-                'updated_at',
-                'created_at',
-            ])
-            ->with([
-                'author:id,name,slug,bio,photo',
-                'category:id,name,slug,description',
-                'tags:id,name,slug',
-            ])
-            ->search((string) $request->string('search'))
+        $postsQuery = $this->publicSearch->apply(
+            $this->publishedPostsQuery()
+                ->select([
+                    'id',
+                    'title',
+                    'slug',
+                    'excerpt',
+                    'content',
+                    'featured_image',
+                    'og_image',
+                    'meta_title',
+                    'meta_description',
+                    'status',
+                    'author_id',
+                    'category_id',
+                    'view_count',
+                    'published_at',
+                    'updated_at',
+                    'created_at',
+                ])
+                ->with([
+                    'author:id,name,slug,bio,photo',
+                    'category:id,name,slug,description',
+                    'tags:id,name,slug',
+                ]),
+            BlogPost::class,
+            (string) $request->string('search'),
+        )
             ->when(
                 $request->filled('category'),
                 fn (Builder $query) => $query->whereHas(

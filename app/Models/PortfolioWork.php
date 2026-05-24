@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Laravel\Scout\Searchable;
 
 class PortfolioWork extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'title',
@@ -61,7 +62,7 @@ class PortfolioWork extends Model
             return $query->whereFullText(['title', 'excerpt', 'description', 'location', 'category'], $term);
         }
 
-        $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $term) . '%';
+        $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
 
         return $query->where(function (Builder $query) use ($like): void {
             $query
@@ -71,6 +72,49 @@ class PortfolioWork extends Model
                 ->orWhere('location', 'like', $like)
                 ->orWhere('category', 'like', $like);
         });
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === 'published'
+            && $this->published_at !== null
+            && $this->published_at->lte(now());
+    }
+
+    public function searchableAs(): string
+    {
+        return 'portfolio_works';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'title' => $this->title,
+            'slug' => $this->slug,
+            'category' => $this->category,
+            'year' => $this->year,
+            'location' => $this->location,
+            'role' => $this->role,
+            'attendance' => $this->attendance,
+            'excerpt' => $this->excerpt,
+            'description' => strip_tags((string) $this->description),
+            'status' => $this->status,
+            'published_at' => $this->published_at?->timestamp,
+            'created_at' => $this->created_at?->timestamp,
+            'searchable_text' => trim(implode(' ', array_filter([
+                $this->title,
+                $this->category,
+                $this->year,
+                $this->location,
+                $this->role,
+                $this->excerpt,
+                strip_tags((string) $this->description),
+            ]))),
+        ];
     }
 
     public function getFeaturedImageUrlAttribute(): ?string
@@ -92,7 +136,7 @@ class PortfolioWork extends Model
 
     public function getSeoTitleAttribute(): string
     {
-        return $this->meta_title ?: Str::limit($this->title . ' | Black Sky Portfolio', 60, '');
+        return $this->meta_title ?: Str::limit($this->title.' | Black Sky Portfolio', 60, '');
     }
 
     public function getSeoDescriptionAttribute(): string

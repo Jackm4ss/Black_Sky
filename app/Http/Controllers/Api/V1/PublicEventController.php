@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Support\PublicSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PublicEventController extends Controller
 {
+    public function __construct(private readonly PublicSearch $publicSearch) {}
+
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 12), 1), 24);
@@ -20,29 +23,32 @@ class PublicEventController extends Controller
 
         $baseQuery = $this->publishedEventsQuery();
 
-        $eventsQuery = (clone $baseQuery)
-            ->select([
-                'id',
-                'title',
-                'slug',
-                'subtitle',
-                'venue',
-                'city',
-                'country_code',
-                'genre',
-                'start_date',
-                'start_time',
-                'end_date',
-                'date_display',
-                'status',
-                'is_sold_out',
-                'image_url',
-                'accent_color',
-                'glow_color',
-                'vendor_url',
-                'created_at',
-            ])
-            ->search((string) $request->string('search'))
+        $eventsQuery = $this->publicSearch->apply(
+            (clone $baseQuery)
+                ->select([
+                    'id',
+                    'title',
+                    'slug',
+                    'subtitle',
+                    'venue',
+                    'city',
+                    'country_code',
+                    'genre',
+                    'start_date',
+                    'start_time',
+                    'end_date',
+                    'date_display',
+                    'status',
+                    'is_sold_out',
+                    'image_url',
+                    'accent_color',
+                    'glow_color',
+                    'vendor_url',
+                    'created_at',
+                ]),
+            Event::class,
+            (string) $request->string('search'),
+        )
             ->when($request->filled('city'), fn ($query) => $query->where('city', (string) $request->string('city')))
             ->when($request->filled('genre'), fn ($query) => $query->where('genre', (string) $request->string('genre')))
             ->when($timeframe === 'past', fn ($query) => $query->where('start_date', '<', $today))
@@ -114,10 +120,10 @@ class PublicEventController extends Controller
                         'image_url' => $section->image_url,
                     ])
                     ->values(),
-                'meta_title' => $event->meta_title ?: $event->title . ' | Black Sky Enterprise',
+                'meta_title' => $event->meta_title ?: $event->title.' | Black Sky Enterprise',
                 'meta_description' => $event->meta_description,
                 'meta_keywords' => $event->meta_keywords,
-                'canonical_url' => $event->canonical_url ?: url('/events/' . $event->slug),
+                'canonical_url' => $event->canonical_url ?: url('/events/'.$event->slug),
                 'og_image' => $event->og_image ?: $event->image_url,
             ],
         ]);

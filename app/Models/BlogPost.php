@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Laravel\Scout\Searchable;
 
 class BlogPost extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $fillable = [
         'title',
@@ -75,7 +76,7 @@ class BlogPost extends Model
             return $query->whereFullText(['title', 'excerpt', 'content'], $term);
         }
 
-        $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $term) . '%';
+        $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
 
         return $query->where(function (Builder $query) use ($like): void {
             $query
@@ -83,6 +84,59 @@ class BlogPost extends Model
                 ->orWhere('excerpt', 'like', $like)
                 ->orWhere('content', 'like', $like);
         });
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        $this->loadMissing(['author:id,is_active', 'category:id,is_active']);
+
+        return $this->status === 'published'
+            && $this->published_at !== null
+            && $this->published_at->lte(now())
+            && (bool) $this->author?->is_active
+            && (bool) $this->category?->is_active;
+    }
+
+    public function searchableAs(): string
+    {
+        return 'blog_posts';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        $this->loadMissing([
+            'author:id,name,slug,is_active',
+            'category:id,name,slug,is_active',
+            'tags:id,name,slug',
+        ]);
+
+        return [
+            'id' => (int) $this->id,
+            'title' => $this->title,
+            'slug' => $this->slug,
+            'excerpt' => $this->excerpt,
+            'content' => strip_tags((string) $this->content),
+            'status' => $this->status,
+            'author' => $this->author?->name,
+            'author_slug' => $this->author?->slug,
+            'category' => $this->category?->name,
+            'category_slug' => $this->category?->slug,
+            'tags' => $this->tags->pluck('name')->values()->all(),
+            'tag_slugs' => $this->tags->pluck('slug')->values()->all(),
+            'published_at' => $this->published_at?->timestamp,
+            'created_at' => $this->created_at?->timestamp,
+            'searchable_text' => trim(implode(' ', array_filter([
+                $this->title,
+                $this->excerpt,
+                strip_tags((string) $this->content),
+                $this->author?->name,
+                $this->category?->name,
+                $this->tags->pluck('name')->join(' '),
+            ]))),
+        ];
     }
 
     public function getReadingMinutesAttribute(): int
@@ -94,7 +148,7 @@ class BlogPost extends Model
 
     public function getSeoTitleAttribute(): string
     {
-        return $this->meta_title ?: Str::limit($this->title . ' | Black Sky Enterprise', 60, '');
+        return $this->meta_title ?: Str::limit($this->title.' | Black Sky Enterprise', 60, '');
     }
 
     public function getSeoDescriptionAttribute(): string
